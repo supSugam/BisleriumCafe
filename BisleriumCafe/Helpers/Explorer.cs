@@ -56,6 +56,7 @@ internal static class Explorer
 
     public static string GetDefaultFilePath<TSource>(FileExtension extension)
     {
+        //@TODO: Create a directory if it doesn't exist.
         return GetFilePath(GetDocumentsDirectoryPath(), GetFile<TSource>(extension));
     }
 }
