@@ -13,6 +13,11 @@ internal static class Explorer
         return FileSystem.AppDataDirectory;
     }
 
+    public static string GetDocumentsDirectoryPath()
+    {
+        return Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+    }
+
     public static FileProvider<TSource> GetFileProvider<TSource>(FileExtension extension) where TSource : IModel
     {
         return extension switch
@@ -51,6 +56,6 @@ internal static class Explorer
 
     public static string GetDefaultFilePath<TSource>(FileExtension extension)
     {
-        return GetFilePath(GetAppDataDirectoryPath(), GetFile<TSource>(extension));
+        return GetFilePath(GetDocumentsDirectoryPath(), GetFile<TSource>(extension));
     }
 }

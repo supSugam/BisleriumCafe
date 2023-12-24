@@ -2,7 +2,7 @@
 using BisleriumCafe.Model;
 using BisleriumCafe.Helpers;
 using BisleriumCafe.Enums;
-namespace BisleriumCafe;
+namespace BisleriumCafe.Services;
 
 internal class SessionService
 {

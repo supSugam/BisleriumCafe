@@ -9,9 +9,10 @@ internal static class Repository
 
     public static void OnDebugConsoleWriteUserNames(this Repository<User> userRepository)
     {
+        System.Diagnostics.Debug.WriteLine("Users");
         foreach (User i in userRepository.GetAll())
         {
-            System.Diagnostics.Debug.WriteLine($"{{ Username = {i.UserName} , InitialPassword = {i.HasInitialPassword} , Role = {i.Role}}}");
+            System.Diagnostics.Debug.WriteLine($"{{ Username = {i.UserName} , Role = {i.Role}}}");
         }
     }
 }

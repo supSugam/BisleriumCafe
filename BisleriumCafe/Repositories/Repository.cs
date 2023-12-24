@@ -1,4 +1,4 @@
-﻿namespace BisleriumCafe;
+﻿namespace BisleriumCafe.Repositories;
 using BisleriumCafe.Model;
 using BisleriumCafe.Providers;
 
@@ -12,6 +12,7 @@ internal class Repository<TSource> : RepositoryIO<TSource>, IRepository<TSource>
 
     public virtual void Add(TSource item)
     {
+        System.Diagnostics.Debug.WriteLine(FileSystem.AppDataDirectory,"Dirr");
         _sourceData.Add(item);
     }
 

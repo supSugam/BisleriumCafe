@@ -1,0 +1,89 @@
+@page "/login"
+
+
+<div class="d-flex w-100 h-100 align-items-center justify-content-center">
+    <EditForm OnValidSubmit="OnValidSubmit" Model="model">
+    <MudGrid Style="justify-content:center!important">
+        <MudItem xs="12" sm="7">
+            <MudCard>
+                <MudCardContent>
+                    <MudTextField Label="Username" HelperText="Max. 8 characters"
+                                  @bind-Value="model.Username" For="@(() => model.Username)" />
+
+                    <MudTextField Label="Password" HelperText="Choose a strong password" Class="mt-3"
+                                  @bind-Value="model.Password" For="@(() => model.Password)" InputType="InputType.Password" />
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Dark" Class="ml-auto">Login</MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="12">
+            <MudText Typo="Typo.body2" Align="Align.Center">
+                Login using your username and password.
+            </MudText>
+        </MudItem>
+    </MudGrid>
+</EditForm>
+</div>
+
+@code {
+    LoginAccountForm model = new LoginAccountForm();
+    bool success;
+
+    public class LoginAccountForm
+    {
+
+        [Required]
+        [StringLength(8, ErrorMessage = "Name length can't be more than 8.")]
+        [MinLength(3, ErrorMessage = "Name length must be at least 3.")]
+        public string Username { get; set; }
+
+        [Required]
+        [StringLength(30, ErrorMessage = "Password must be at least 8 characters long.", MinimumLength = 8)]
+        public string Password { get; set; }
+
+    }
+    //     public class RegisterAccountForm
+    //     {
+    //         [Required]
+    // [StringLength(30, ErrorMessage = "Name length can't be more than 30.")]
+    // [MinLength(3, ErrorMessage = "Name length must be at least 3.")]
+    // public string FullName { get; set; }
+
+    //         [Required]
+    //         [StringLength(8, ErrorMessage = "Name length can't be more than 8.")]
+    // [MinLength(3, ErrorMessage = "Name length must be at least 3.")]
+    //         public string Username { get; set; }
+
+    //         [Required]
+    //         [EmailAddress]
+
+    //         public string Email { get; set; }
+
+    //         [Required]
+    //         [StringLength(30, ErrorMessage = "Password must be at least 8 characters long.", MinimumLength = 8)]
+    //         public string Password { get; set; }
+
+    //         [Required]
+    //         [Compare(nameof(Password))]
+    //         public string Password2 { get; set; }
+    //     }
+
+    private async void OnValidSubmit(EditContext context)
+    {
+        success = true;
+        StateHasChanged();
+        JsonFileProvider<User> jsonFileProvider = new();
+        Repository<User> usersRepository = new(jsonFileProvider);
+await usersRepository.LoadAsync();
+        User user = new User();
+         user.FullName="Test";
+         user.UserName="TestUser";
+         user.PasswordHash="TestPassword";
+         user.Role = UserRole.Admin;
+         usersRepository.Add(user);
+ 
+    }
+
+}

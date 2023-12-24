@@ -1,17 +1,139 @@
 ﻿@inherits LayoutComponentBase
+@using BisleriumCafe.Model;
+@inject ISnackbar Snackbar;
+@inject Microsoft.AspNetCore.Components.NavigationManager _navigationManager;
+@inject BisleriumCafe.Services.SessionService _sessionService;
+@inject BisleriumCafe.Services.AuthService _authService;
+@inject BisleriumCafe.Repositories.Repository<User> _usersRepository;
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+<MudThemeProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+<MudPaper Height="100vh" Width="100%" Style="overflow:hidden">
+    <MudAppBar Dense="true" Elevation="0" Class="background-dense d-flex justify-space-between flex-grow-1">
+        <MudItem Class="d-flex gap-3 align-items-center">
+            <MudIconButton Class="color-dark" Icon="@Icons.Material.Filled.Menu" Edge="Edge.Start" OnClick="ToggleDrawer" Size="Size.Medium" />
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
+            <MudItem Class="d-flex gap-2 align-items-center">
+                <MudText Class="color-dark fw-bold ls-tighter" Typo="Typo.h5" Color="Color.Dark">Bislerium Cafe</MudText>
 
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
+<MudIcon Icon="@Icons.Material.Filled.Coffee" Size="Size.Medium" Class="color-dark" />
+            </MudItem>
+
+</MudItem>
+
+        <MudSpacer />
+        <MudMenu Class="color-dark" Icon="@Icons.Material.Filled.Person" Size="Size.Medium">
+            <MudMenuItem Link="/">Home</MudMenuItem>
+            <MudMenuItem Link="explore">Explore</MudMenuItem>
+            @if (IsUserLoggedIn)
+            {
+                <MudMenuItem Link="profile">Profile</MudMenuItem>
+            }
+
+            @if (userRole == UserRole.Admin)
+            {
+                <MudMenuItem Link="admin-dashboard">Admin</MudMenuItem>
+            }
+
+            @if (userRole == UserRole.Customer)
+            {
+                <MudMenuItem Link="order-now">Order now</MudMenuItem>
+
+                if (IsUserLoggedIn)
+                {
+                    <MudMenuItem Link="my-orders">My Orders</MudMenuItem>
+                }
+            }
+
+            @if (userRole == UserRole.Staff)
+            {
+                <MudMenuItem Link="staff-dashboard">Dashboard</MudMenuItem>
+            }
+
+            @if (IsUserLoggedIn)
+            {
+                <MudMenuItem OnClick="HandleLogOut">Logout</MudMenuItem>
+
+            }
+            else
+            {
+                <MudMenuItem Link="login">Login</MudMenuItem>
+            }
+        </MudMenu>
+    </MudAppBar >
+    <div style="height: 48px;"/>
+    <MudDrawerContainer Class="mud-height-full background-dense" Style="overflow:hidden">
+        <MudDrawer Height="auto" @bind-Open="@IsDrawerOpen" Elevation="0" Variant="@DrawerVariant.Persistent" Class="background-dense" Style="top:50%;transform:translateY(-50%)">
+            <MudNavMenu>
+                <MudNavLink Href="/" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Home" IconColor="Color.Dark" Class="d-flex align-items-center">
+                    <MudText Typo="Typo.h6" Color="Color.Dark">Home</MudText>
+                </MudNavLink>
+                <MudNavLink Href="/explore" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Coffee" IconColor="Color.Dark" Class="d-flex align-items-center">
+<MudText Typo="Typo.h6" Color="Color.Dark">Explore</MudText>
+                </MudNavLink>
+                @if (IsUserLoggedIn)
+                {
+                    <MudNavLink Href="/profile" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Person" IconColor="Color.Dark" Class="d-flex align-items-center">
+<MudText Typo="Typo.h6" Color="Color.Dark">Profile</MudText>                                  
+                    </MudNavLink>                                                            
+                }                              
+                else                                                                        
+                {
+                    <MudNavLink Href="/login" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Person" IconColor="Color.Dark" Class="d-flex align-items-center">
+<MudText Typo="Typo.h6" Color="Color.Dark">Login</MudText>
+                    </MudNavLink>
+                }
+            </MudNavMenu>
+        </MudDrawer>
+
+        <div class="mud-height-full background-light p-4" style="overflow-y:scroll">
+                @Body
+         </div>
+    </MudDrawerContainer>
+</MudPaper>
+@code {
+    bool IsDrawerOpen = true;
+    bool IsUserLoggedIn = false;
+    UserRole userRole = UserRole.Customer;
+
+
+    // Repositories
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        // debug writeline
+        Console.WriteLine(FileSystem.AppDataDirectory);
+        await _usersRepository.LoadAsync();
+
+        try
+        {
+            await _authService.CheckSession();
+        } catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, MudBlazor.Severity.Error);
+        }
+        await Task.Delay(1000);
+
+        _usersRepository.OnDebugConsoleWriteUserNames();
+
+        IsUserLoggedIn = _authService.CurrentUser is not null;
+
+        if (_authService.CurrentUser is not null)
+        {
+            userRole = _authService.CurrentUser.Role;
+        }
+    }
+
+    void ToggleDrawer()
+    {
+        IsDrawerOpen = !IsDrawerOpen;
+        StateHasChanged();
+    }
+
+    void HandleLogOut()
+    {
+        _authService.LogOut();
+    }
+}

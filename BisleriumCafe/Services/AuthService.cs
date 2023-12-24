@@ -2,8 +2,8 @@
 using BisleriumCafe.Model;
 using BisleriumCafe.Helpers;
 using BisleriumCafe.Enums;
-
-internal class AuthService(Repository<User> userRepository, SessionService sessionService)
+using Microsoft.AspNetCore.Components;
+internal class AuthService(Repository<User> userRepository, SessionService sessionService, NavigationManager _navigationManager)
 {
     private readonly Repository<User> _userRepository = userRepository;
 
@@ -27,11 +27,10 @@ internal class AuthService(Repository<User> userRepository, SessionService sessi
         User user = new()
         {
             UserName = username,
-            Email = pleaseChange,
             FullName = pleaseChange,
             PasswordHash = Hasher.HashSecret(username),
             Role = UserRole.Admin,
-            CreatedBy = Guid.Empty,
+            //CreatedBy = Guid.Empty,
         };
         _userRepository.Add(user);
         await _userRepository.FlushAsync();
@@ -48,11 +47,10 @@ internal class AuthService(Repository<User> userRepository, SessionService sessi
         User user = new()
         {
             UserName = username,
-            Email = email,
             FullName = fullname,
             PasswordHash = Hasher.HashSecret(username),
             Role = role,
-            CreatedBy = CurrentUser.Id,
+            //CreatedBy = CurrentUser.Id,
         };
         _userRepository.Add(user);
     }
@@ -68,7 +66,7 @@ internal class AuthService(Repository<User> userRepository, SessionService sessi
 
         if (Hasher.VerifyHash(password, CurrentUser.PasswordHash))
         {
-            Session session = Session.Generate(CurrentUser.Id, stayLoggedIn);
+            Session session = Session.Generate(CurrentUser.Id, stayLoggedIn,CurrentUser.Role);
             await _sessionService.SaveSession(session);
             return true;
         }
@@ -77,7 +75,7 @@ internal class AuthService(Repository<User> userRepository, SessionService sessi
 
     public bool IsUserAdmin()
     {
-        return CurrentUser.Role == UserRole.Admin;
+        return CurrentUser is not null && CurrentUser.Role == UserRole.Admin;
     }
 
     public void ChangePassword(string oldPassword, string newPassword)
@@ -88,13 +86,14 @@ internal class AuthService(Repository<User> userRepository, SessionService sessi
         }
 
         CurrentUser.PasswordHash = Hasher.HashSecret(newPassword);
-        CurrentUser.HasInitialPassword = false;
+        //CurrentUser.HasInitialPassword = false;
     }
 
-    public void LogOut()
+    public void LogOut(string sessionDestroyCallback = "/")
     {
         _sessionService.DeleteSession();
         CurrentUser = null;
+        _navigationManager.NavigateTo(sessionDestroyCallback);
     }
 
     public async Task CheckSession()

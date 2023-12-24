@@ -1,8 +1,42 @@
-﻿html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+﻿
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+:root {
+    --light: #F5EDDA;
+    --dense: #E9CBA7;
+    --dark: #66462F;
+}
+html, body {
+    color: var(--dark);
+    font-family: 'Inter', sans-serif;
 }
 
-a, .btn-link {
+*,
+*::after,
+*::before {
+    box-sizing: border-box;
+}
+
+.background-light {
+    background-color: var(--light);
+}
+
+.background-dense {
+    background-color: var(--dense);
+}
+
+.background-dark {
+    background-color: var(--light);
+}
+
+.color-light{
+color: var(--light);
+}
+.color-dark{
+color: var(--dark);
+}
+
+
+/*a, .btn-link {
     color: #006bb7;
 }
 
@@ -84,3 +118,4 @@ h1:focus {
         padding-left: env(safe-area-inset-left);
     }
 }
+*/
