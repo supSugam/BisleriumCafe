@@ -103,7 +103,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // debug writeline
         Console.WriteLine(FileSystem.AppDataDirectory);
         await _usersRepository.LoadAsync();
 

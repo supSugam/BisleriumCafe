@@ -3,7 +3,7 @@ using BisleriumCafe.Model;
 using BisleriumCafe.Helpers;
 using BisleriumCafe.Enums;
 using Microsoft.AspNetCore.Components;
-internal class AuthService(Repository<User> userRepository, SessionService sessionService, NavigationManager _navigationManager)
+internal class AuthService(Repository<User> userRepository, SessionService sessionService)
 {
     private readonly Repository<User> _userRepository = userRepository;
 
@@ -89,11 +89,10 @@ internal class AuthService(Repository<User> userRepository, SessionService sessi
         //CurrentUser.HasInitialPassword = false;
     }
 
-    public void LogOut(string sessionDestroyCallback = "/")
+    public void LogOut()
     {
         _sessionService.DeleteSession();
         CurrentUser = null;
-        _navigationManager.NavigateTo(sessionDestroyCallback);
     }
 
     public async Task CheckSession()

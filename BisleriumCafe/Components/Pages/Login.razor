@@ -1,15 +1,21 @@
 @page "/login"
 @using BisleriumCafe.Helpers
+@using BisleriumCafe.Services
+@using System.ComponentModel.DataAnnotations
+@inject ISnackbar Snackbar;
+@inject Microsoft.AspNetCore.Components.NavigationManager _navigationManager;
+@inject BisleriumCafe.Services.AuthService _authService;
+
 <div class="d-flex w-100 h-100 align-items-center justify-content-center">
-    <EditForm OnValidSubmit="OnValidSubmit" Model="model">
+    <EditForm OnValidSubmit="OnValidSubmit" Model="@model">
         <MudGrid Style="justify-content:center!important">
             <MudItem xs="12" sm="12">
                 <MudCard>
                     <MudCardContent>
-                        <MudTextField Label="Username" HelperText="Max. 8 characters"
+                        <MudTextField Label="Username" HelperText="Atleast 3 characters long."
                                       @bind-Value="model.Username" For="@(() => model.Username)" />
 
-                        <MudTextField Label="Password" HelperText="Choose a strong password" Class="mt-3"
+                        <MudTextField Label="Password" Class="mt-3"
                                       @bind-Value="model.Password" For="@(() => model.Password)" InputType="InputType.Password" />
                     </MudCardContent>
                     <MudCardActions>
@@ -20,6 +26,7 @@
             <MudItem xs="12">
                 <MudText Typo="Typo.body2" Align="Align.Center">
                     Login using your username and password.
+                    @formData
                 </MudText>
             </MudItem>
         </MudGrid>
@@ -29,17 +36,18 @@
 @code {
     LoginAccountForm model = new LoginAccountForm();
     bool success;
+    string formData = "";
 
     public class LoginAccountForm
     {
 
         [Required]
         [MinLength(3, ErrorMessage = "Name length must be at least 3.")]
-        public string Username { get; set; }
+        public string Username { get; set; }= "";
 
         [Required]
-        [StringLength(30, ErrorMessage = "Password must be at least 8 characters long.", MinimumLength = 8)]
-        public string Password { get; set; }
+        [StringLength(30, ErrorMessage = "Password must be at least 8 characters long.", MinimumLength = 1)]
+        public string Password { get; set; }= "";
 
     }
     //     public class RegisterAccountForm
@@ -72,16 +80,42 @@
     {
         success = true;
         StateHasChanged();
-        JsonFileProvider<User> jsonFileProvider = new();
-        Repository<User> usersRepository = new(jsonFileProvider);
-        await usersRepository.LoadAsync();
-        User user = new User();
-        user.FullName = "Admin Name";
-        user.UserName = "admin";
-        user.PasswordHash = Hasher.HashSecret("admin");
-        user.Role = UserRole.Admin;
-        usersRepository.Add(user);
-        await usersRepository.FlushAsync();
+        string username = model.Username;
+        string password = model.Password;
+        // await usersRepository.LoadAsync();
+        // User user = new User();
+        // user.FullName = "Admin Name";
+        // user.UserName = "admin";
+        // user.PasswordHash = Hasher.HashSecret("admin");
+        // user.Role = UserRole.Admin;
+        // usersRepository.Add(user);
+        // await usersRepository.FlushAsync();
+        if (username == "" || password == "")
+        {
+            Snackbar.Add("Please fill all the fields", MudBlazor.Severity.Error);
+            success = false;
+            return;
+        }
+        try
+        {
+            formData = username+ " " + password;
+            bool loggedIn = await _authService.Login(username, password, true);
+            success = loggedIn;
+if (loggedIn)
+            {
+                Snackbar.Add("Logged in successfully", MudBlazor.Severity.Success);
+                _navigationManager.NavigateTo("/");
+            }
+            else
+            {
+                Snackbar.Add("Invalid username or password", MudBlazor.Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, MudBlazor.Severity.Error);
+            success = false;
+        }
     }
 
 }
