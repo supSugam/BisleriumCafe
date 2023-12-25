@@ -34,20 +34,33 @@ internal static class Explorer
         return Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
     }
 
-    public static string GetFilePath(string Directory, string fileName)
+    public static string GetFilePath(string directory, string fileName)
     {
-        return Path.Combine(Directory, fileName);
+        string FullPath = Path.Combine(directory, fileName);
+
+        if (!Directory.Exists(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        if (!File.Exists(FullPath))
+        {
+            // Create an empty list and serialize it to JSON
+            var emptyList = new List<object>(); // Change 'object' to the type you want in the list
+            string jsonContent = JsonSerializer.Serialize(emptyList);
+
+            // Write the JSON content to the file
+            File.WriteAllText(FullPath, jsonContent);
+        }
+
+        return FullPath;
     }
 
     public static string GetFile<TSource>(FileExtension extension)
     {
-        return GetFile(typeof(TSource).Name, extension);
+        return $"{typeof(TSource).Name}.{Enum.GetName(extension)}";
     }
 
-    public static string GetFile(string fileName, FileExtension extension)
-    {
-        return $"{fileName}.{Enum.GetName(extension)}";
-    }
 
     public static string GetDefaultExportFilePath<TSource>(FileExtension extension)
     {
@@ -56,7 +69,6 @@ internal static class Explorer
 
     public static string GetDefaultFilePath<TSource>(FileExtension extension)
     {
-        //@TODO: Create a directory if it doesn't exist.
         return GetFilePath(GetDocumentsDirectoryPath(), GetFile<TSource>(extension));
     }
 }

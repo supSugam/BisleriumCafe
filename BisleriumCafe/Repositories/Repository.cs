@@ -12,7 +12,6 @@ internal class Repository<TSource> : RepositoryIO<TSource>, IRepository<TSource>
 
     public virtual void Add(TSource item)
     {
-        System.Diagnostics.Debug.WriteLine(FileSystem.AppDataDirectory,"Dirr");
         _sourceData.Add(item);
     }
 

@@ -35,8 +35,10 @@ internal class JsonFileProvider<TSource> : FileProvider<TSource> where TSource :
     {
         try
         {
-            var list = await JsonSerializer.DeserializeAsync<List<TSource>>(stream, options);            
-            return list ??= [];
+            // Set the stream position to the beginning
+            stream.Seek(0, SeekOrigin.Begin);
+            var list = await JsonSerializer.DeserializeAsync<List<TSource>>(stream, options);
+            return list ?? [];
         }
         catch
         {
@@ -47,6 +49,7 @@ internal class JsonFileProvider<TSource> : FileProvider<TSource> where TSource :
             stream.Close();
         }
     }
+
 
     internal override async Task WriteAsync(string path, ICollection<TSource> data)
     {
