@@ -1,0 +1,100 @@
+﻿@page "/dashboard/coffee"
+
+@using System.ComponentModel.DataAnnotations
+@inject ISnackbar Snackbar;
+
+<EditForm Model="@AddCoffeeFormModel" OnValidSubmit="OnAddCoffeeSubmit">
+    <DataAnnotationsValidator />
+    <MudGrid>
+        <MudItem xs="12" sm="12">
+            <MudCard>
+                <MudCardContent>
+                    <MudTextField Label="Coffee Name" HelperText="Enter name of the coffee."
+                                  @bind-Value="AddCoffeeFormModel.CoffeeName" For="@(() => AddCoffeeFormModel.CoffeeName)" Required="true" />
+
+                    <MudTextField Label="Coffee Description" HelperText="Enter description of the coffee."
+                                  @bind-Value="AddCoffeeFormModel.CoffeeDescription" For="@(() => AddCoffeeFormModel.CoffeeDescription)" />
+
+                    <MudNumericField @bind-Value="AddCoffeeFormModel.CoffeePrice" Label="Coffee Price" Min="0" Max="1000" Step="10" HideSpinButtons="true" Required="true" />
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Dark" Class="ml-auto">
+                        Add Coffee
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</EditForm>
+
+
+@code {
+
+    bool success;
+
+    AddCoffeeForm AddCoffeeFormModel = new AddCoffeeForm();
+    AddAddInsForm AddAddInsFormModel = new AddAddInsForm();
+
+    public class AddCoffeeForm
+    {
+        [Required]
+        [MinLength(3, ErrorMessage = "Name length must be at least 3 characters long.")]
+        public string CoffeeName { get; set; } = "";
+
+        public string CoffeeDescription { get; set; } = "";
+
+        [Range(0, 1000, ErrorMessage = "Price must be between 0 and 1000.")]
+        public int CoffeePrice { get; set; } = 0;
+    }
+
+    public class AddAddInsForm
+    {
+        [Required]
+        [MinLength(3, ErrorMessage = "Name length must be at least 3 characters long.")]
+        public string AddInsName { get; set; } = "";
+
+        public string AddInsDescription { get; set; } = "";
+
+        [Range(0, 1000, ErrorMessage = "Price must be between 0 and 1000.")]
+        public int AddInsPrice { get; set; } = 0;
+    }
+
+    private void OnAddCoffeeSubmit(EditContext context)
+    {
+        success = true;
+        StateHasChanged();
+        string coffeeName = AddCoffeeFormModel.CoffeeName;
+string coffeeDescription = AddCoffeeFormModel.CoffeeDescription;
+int coffeePrice = AddCoffeeFormModel.CoffeePrice;
+
+        try
+        {
+            bool registered = await _authService.Register(username, fullName, password, UserRole.Admin);
+            success = registered;
+            if (registered)
+            {
+                Snackbar.Add("Registered successfully, redirecting to login", MudBlazor.Severity.Success);
+                _navigationManager.NavigateTo("/login");
+            }
+            else
+            {
+                Snackbar.Add("Registration failed", MudBlazor.Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, MudBlazor.Severity.Error);
+            success = false;
+        }
+
+    }
+
+    private void OnAddAddInsSubmit(EditContext context)
+    {
+        success = true;
+        StateHasChanged();
+    }
+
+}
+
+

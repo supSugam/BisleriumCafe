@@ -19,14 +19,13 @@ namespace BisleriumCafe.Model
             CoffeePrice = coffeePrice;
         }   
 
-        public CoffeeType StoreACoffeeType()
+        public async Task<CoffeeType> StoreACoffeeType(this CoffeeType coffeeType)
         {
             // store coffee type as json to file
-            CoffeeType coffeeType = new CoffeeType(CoffeeName, CoffeeDescription, CoffeePrice);
             JsonFileProvider<CoffeeType> jsonFileProvider = new();
             Repository<CoffeeType> coffeeTypeRepository = new(jsonFileProvider);
             coffeeTypeRepository.Add(coffeeType);
-
+            await coffeeTypeRepository.FlushAsync();
             return coffeeType;
         }
     }

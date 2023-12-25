@@ -2,7 +2,7 @@
 {
     internal class Customer:User
     {
-        public int TotalOrders { get; set; }
+        public int TotalOrders { get; set; } = 0;
         public bool isRegularMember { get; set; }=false;
         public int FreeCoffeeCount { get; set; }=0;
         public int FreeCoffeeProgress { get; set; }=0;

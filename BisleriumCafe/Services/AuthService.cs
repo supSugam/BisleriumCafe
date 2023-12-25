@@ -2,13 +2,15 @@
 using BisleriumCafe.Model;
 using BisleriumCafe.Helpers;
 using BisleriumCafe.Enums;
-internal class AuthService(Repository<User> userRepository, SessionService sessionService)
+internal class AuthService(Repository<User> userRepository, Repository<Customer> customerRepository, SessionService sessionService)
 {
     private readonly Repository<User> _userRepository = userRepository;
+    private readonly Repository<Customer> _customerRepository = customerRepository;
 
     private readonly SessionService _sessionService = sessionService;
 
     public User? CurrentUser { get; private set; }
+    public Customer? CurrentCustomer { get; private set; }
 
     public async Task<string?> SeedInitialUser()
     {
@@ -43,6 +45,8 @@ internal class AuthService(Repository<User> userRepository, SessionService sessi
             return false;
         }
 
+
+
         User user = new()
         {
             UserName = username,
@@ -56,6 +60,18 @@ internal class AuthService(Repository<User> userRepository, SessionService sessi
         }
         _userRepository.Add(user);
         await _userRepository.FlushAsync();
+        if(role == UserRole.Customer)
+        {
+            Customer customer = new()
+            {
+                UserName = username,
+                FullName = fullname,
+                PasswordHash = Hasher.HashSecret(password),
+                Role = role,
+            };
+            _customerRepository.Add(customer);
+            await _customerRepository.FlushAsync();
+        }   
         return true;
     }
 
@@ -63,15 +79,28 @@ internal class AuthService(Repository<User> userRepository, SessionService sessi
     {
         CurrentUser = _userRepository.Get(x => x.UserName, userName);
 
+
         if (CurrentUser is null)
         {
             return false;
         }
 
+
         if (Hasher.VerifyHash(password, CurrentUser.PasswordHash))
         {
             Session session = Session.Generate(CurrentUser.Id, stayLoggedIn,CurrentUser.Role);
             await _sessionService.SaveSession(session);
+
+            switch (CurrentUser.Role)
+            {
+                case UserRole.Admin:
+                    break;
+                case UserRole.Customer:
+                    CurrentCustomer = _customerRepository.Get(x => x.UserName, userName);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
             return true;
         }
         return false;
@@ -97,6 +126,7 @@ internal class AuthService(Repository<User> userRepository, SessionService sessi
     {
         _sessionService.DeleteSession();
         CurrentUser = null;
+        CurrentCustomer = null;
     }
 
     public async Task CheckSession()

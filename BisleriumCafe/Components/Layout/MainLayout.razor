@@ -5,6 +5,7 @@
 @inject BisleriumCafe.Services.SessionService _sessionService;
 @inject BisleriumCafe.Services.AuthService _authService;
 @inject BisleriumCafe.Repositories.Repository<User> _usersRepository;
+@inject BisleriumCafe.Repositories.Repository<Customer> _customersRepository;
 
 <MudThemeProvider />
 <MudDialogProvider />
@@ -72,8 +73,7 @@
                     @if (_authService.CurrentUser.Role == UserRole.Admin)
                     {
                         <MudNavGroup Icon="@Icons.Material.Filled.Dashboard" Title="Dashboard" @bind-Expanded=IsDashboardMenuExpanded>
-                            <MudNavLink Href="/coffee-type">Coffee Types</MudNavLink>
-                            <MudNavLink Href="/coffee-addins">Addins</MudNavLink>
+                            <MudNavLink Href="/dashboard/coffee">Coffees</MudNavLink>
                             <MudNavLink Href="/staffs">Staffs</MudNavLink>
                         </MudNavGroup>
 
@@ -122,6 +122,7 @@
     protected override async Task OnInitializedAsync()
     {
         await _usersRepository.LoadAsync();
+        await _customersRepository.LoadAsync();
 
         try
         {

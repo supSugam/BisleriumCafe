@@ -74,7 +74,8 @@
         }
         try
         {
-            bool registered = await _authService.Register(username,fullName, password, UserRole.Admin);
+            // bool registered = await _authService.Register(username,fullName, password, UserRole.Admin);
+bool registered = await _authService.Register(username, fullName, password, UserRole.Customer);
             success = registered;
             if (registered)
             {
