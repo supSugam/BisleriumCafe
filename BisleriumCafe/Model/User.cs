@@ -13,7 +13,7 @@ public class User : IModel, ICloneable
     public UserRole Role { get; set; }
     //public bool HasInitialPassword { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.Now;
-    //public Guid CreatedBy { get; set; }
+    public Guid? CreatedBy { get; set; }
 
     public User()
     {

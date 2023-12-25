@@ -27,14 +27,6 @@ public class Session
             Role = userRole,
         };
     }
-    public static Session Generate(Guid userID, TimeSpan validPeriod,NavigationManager navManager=null)
-    {
-        return new Session()
-        {
-            UserId = userID,
-            ValidPeriod = validPeriod,
-        };
-    }
 
     public bool IsValid()
     {

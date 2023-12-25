@@ -8,6 +8,7 @@
 
 <div class="d-flex w-100 h-100 align-items-center justify-content-center">
     <EditForm OnValidSubmit="OnValidSubmit" Model="@model">
+        <DataAnnotationsValidator />
         <MudGrid Style="justify-content:center!important">
             <MudItem xs="12" sm="12">
                 <MudCard>
@@ -19,6 +20,7 @@
                                       @bind-Value="model.Password" For="@(() => model.Password)" InputType="InputType.Password" />
                     </MudCardContent>
                     <MudCardActions>
+                        <MudLink Class="mr-auto" Href="/signup">Don't have an account? Sign up</MudLink>
                         <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Dark" Class="ml-auto">Login</MudButton>
                     </MudCardActions>
                 </MudCard>
@@ -42,7 +44,7 @@
     {
 
         [Required]
-        [MinLength(3, ErrorMessage = "Name length must be at least 3.")]
+        [MinLength(3, ErrorMessage = "Name length must be at least 3 characters long.")]
         public string Username { get; set; }= "";
 
         [Required]
@@ -50,31 +52,6 @@
         public string Password { get; set; }= "";
 
     }
-    //     public class RegisterAccountForm
-    //     {
-    //         [Required]
-    // [StringLength(30, ErrorMessage = "Name length can't be more than 30.")]
-    // [MinLength(3, ErrorMessage = "Name length must be at least 3.")]
-    // public string FullName { get; set; }
-
-    //         [Required]
-    //         [StringLength(8, ErrorMessage = "Name length can't be more than 8.")]
-    // [MinLength(3, ErrorMessage = "Name length must be at least 3.")]
-    //         public string Username { get; set; }
-
-    //         [Required]
-    //         [EmailAddress]
-
-    //         public string Email { get; set; }
-
-    //         [Required]
-    //         [StringLength(30, ErrorMessage = "Password must be at least 8 characters long.", MinimumLength = 8)]
-    //         public string Password { get; set; }
-
-    //         [Required]
-    //         [Compare(nameof(Password))]
-    //         public string Password2 { get; set; }
-    //     }
 
     private async void OnValidSubmit(EditContext context)
     {
@@ -117,5 +94,4 @@ if (loggedIn)
             success = false;
         }
     }
-
 }

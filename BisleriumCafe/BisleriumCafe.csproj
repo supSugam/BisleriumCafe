@@ -84,7 +84,24 @@
     </ItemGroup>
 
     <ItemGroup>
+      <MauiImage Include="wwwroot\assets\images\carousel_img_1.jpg">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </MauiImage>
+      <MauiImage Include="wwwroot\assets\images\carousel_img_2.jpg" />
+      <MauiImage Include="wwwroot\assets\images\carousel_img_3.jpg" />
+    </ItemGroup>
+
+    <ItemGroup>
       <None Include="components\pages\Login.razor" />
+      <None Include="wwwroot\assets\images\carousel_img_1.jpg">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Include="wwwroot\assets\images\carousel_img_2.jpg">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Include="wwwroot\assets\images\carousel_img_3.jpg">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
 </Project>

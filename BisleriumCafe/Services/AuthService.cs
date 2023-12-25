@@ -2,7 +2,6 @@
 using BisleriumCafe.Model;
 using BisleriumCafe.Helpers;
 using BisleriumCafe.Enums;
-using Microsoft.AspNetCore.Components;
 internal class AuthService(Repository<User> userRepository, SessionService sessionService)
 {
     private readonly Repository<User> _userRepository = userRepository;
@@ -37,22 +36,27 @@ internal class AuthService(Repository<User> userRepository, SessionService sessi
         return username;
     }
 
-    public void Register(string username, string email, string fullname, UserRole role)
+    public async Task<bool> Register(string username, string fullname,string password, UserRole role)
     {
         if (_userRepository.HasUserName(username))
         {
-            throw new Exception(message: "Username already exists!");
+            return false;
         }
 
         User user = new()
         {
             UserName = username,
             FullName = fullname,
-            PasswordHash = Hasher.HashSecret(username),
+            PasswordHash = Hasher.HashSecret(password),
             Role = role,
-            //CreatedBy = CurrentUser.Id,
         };
+        if(CurrentUser is not null && CurrentUser.Role == UserRole.Admin)
+        {
+            user.CreatedBy = CurrentUser.Id;
+        }
         _userRepository.Add(user);
+        await _userRepository.FlushAsync();
+        return true;
     }
 
     public async Task<bool> Login(string userName, string password, bool stayLoggedIn)

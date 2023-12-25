@@ -1,5 +1,30 @@
 ﻿@page "/"
 
-<h1>Hello, world!</h1>
+<MudCarousel Class="mud-width-full" Style="height:360px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="true" AutoCycle="true" TData="object">
+    <MudCarouselItem Transition="transition" Color="@Color.Primary">
+        <div class="d-flex position-relative rounded overflow-hidden" style="height:100%">
+            <MudImage Fluid="true" Class="mx-auto my-auto w-100 h-100 position-absolute" Alt="Coffee Carousel Image - Bislerium Cafe" Src="assets/images/carousel_img_1.jpg"
+            Style="object-fit:cover !important;"
+            />
+        </div>
+    </MudCarouselItem>
+    <MudCarouselItem Transition="transition" Color="@Color.Secondary">
+        <div class="d-flex position-relative rounded overflow-hidden" style="height:100%">
+            <MudImage Fluid="true" Class="mx-auto my-auto w-100 h-100 position-absolute" Alt="Coffee Carousel Image - Bislerium Cafe" Src="assets/images/carousel_img_2.jpg"
+            Style="object-fit:cover !important;"
+            />
+        </div>
+    </MudCarouselItem>
+    <MudCarouselItem Transition="transition">
+        <div class="d-flex position-relative rounded overflow-hidden" style="height:100%">
+            <MudImage Fluid="true" Class="mx-auto my-auto w-100 h-100 position-absolute" Alt="Coffee Carousel Image - Bislerium Cafe" Src="assets/images/carousel_img_3.jpg"
+            Style="object-fit:cover !important;"
+            />
+        </div>
+    </MudCarouselItem>
+</MudCarousel>
 
-Welcome to your new app.
+
+@code {
+    private Transition transition = Transition.Fade;
+}

@@ -1,0 +1,96 @@
+@page "/signup"
+
+@using System.ComponentModel.DataAnnotations
+@using BisleriumCafe.Helpers
+@using BisleriumCafe.Services
+@inject ISnackbar Snackbar;
+@inject Microsoft.AspNetCore.Components.NavigationManager _navigationManager;
+@inject BisleriumCafe.Services.AuthService _authService;
+
+<EditForm Model="@model" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator />
+    <MudGrid>
+        <MudItem xs="12" sm="12">
+            <MudCard>
+                <MudCardContent>
+                    <MudTextField Label="Full name" HelperText="Atleast 3 characters."
+                                  @bind-Value="model.FullName" For="@(() => model.FullName)" />
+                    <MudTextField Label="Username" HelperText="Atleast 3 characters."
+                                  @bind-Value="model.Username" For="@(() => model.Username)" />
+
+                    <MudTextField Label="Password" HelperText="Choose a strong password" Class="mt-3"
+                                  @bind-Value="model.Password" For="@(() => model.Password)" InputType="InputType.Password" />
+                    <MudTextField Label="Password" HelperText="Repeat the password" Class="mt-3"
+                                  @bind-Value="model.RePassword" For="@(() => model.RePassword)" InputType="InputType.Password" />
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Register</MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</EditForm>
+
+
+@code {
+    RegisterAccountForm model = new RegisterAccountForm();
+    bool success;
+
+    public class RegisterAccountForm
+    {
+        [Required]
+        [StringLength(32, ErrorMessage = "Name should be 3 to 32 characters long. ", MinimumLength = 3)]
+        public string FullName { get; set; } = "";
+
+        [Required]
+        [StringLength(32, ErrorMessage = "Username should be 3 to 32 characters long. ", MinimumLength = 3)]
+        public string Username { get; set; } = "";
+
+        [Required]
+        [StringLength(32, ErrorMessage = "Password must be at least 8 characters long.", MinimumLength = 4)]
+        public string Password { get; set; } = "";
+
+        [Required]
+        [Compare(nameof(Password), ErrorMessage="Password does not match.")]
+        public string RePassword { get; set; } = "";
+
+    }
+
+    private async void OnValidSubmit(EditContext context)
+    {
+        success = true;
+        StateHasChanged();
+
+        string username = model.Username;
+        string password = model.Password;
+        string fullName = model.FullName;
+        string rePassword = model.RePassword;
+
+        if (username == "" || password == "" || fullName == "" || rePassword == "")
+        {
+            Snackbar.Add("Please fill all the fields", MudBlazor.Severity.Error);
+            success = false;
+            return;
+        }
+        try
+        {
+            bool registered = await _authService.Register(username,fullName, password, UserRole.Admin);
+            success = registered;
+            if (registered)
+            {
+                Snackbar.Add("Registered successfully, redirecting to login", MudBlazor.Severity.Success);
+                _navigationManager.NavigateTo("/login");
+            }
+            else
+            {
+                Snackbar.Add("Registration failed", MudBlazor.Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, MudBlazor.Severity.Error);
+            success = false;
+        }
+    }
+
+}
