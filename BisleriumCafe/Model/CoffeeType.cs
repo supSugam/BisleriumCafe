@@ -1,9 +1,7 @@
 ﻿
-using BisleriumCafe.Providers;
 
-namespace BisleriumCafe.Model
-{
-    internal class CoffeeType:IModel
+namespace BisleriumCafe.Model;
+    public class CoffeeType: IModel
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         public string CoffeeName { get; set; }
@@ -11,6 +9,7 @@ namespace BisleriumCafe.Model
         public double CoffeePrice { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime UpdatedAt { get; set; } = DateTime.Now;
+    public Guid? CreatedBy { get; set; }
 
         public CoffeeType(string coffeeName, string coffeeDescription, double coffeePrice)
         {
@@ -19,14 +18,4 @@ namespace BisleriumCafe.Model
             CoffeePrice = coffeePrice;
         }   
 
-        public async Task<CoffeeType> StoreACoffeeType(this CoffeeType coffeeType)
-        {
-            // store coffee type as json to file
-            JsonFileProvider<CoffeeType> jsonFileProvider = new();
-            Repository<CoffeeType> coffeeTypeRepository = new(jsonFileProvider);
-            coffeeTypeRepository.Add(coffeeType);
-            await coffeeTypeRepository.FlushAsync();
-            return coffeeType;
-        }
     }
-}

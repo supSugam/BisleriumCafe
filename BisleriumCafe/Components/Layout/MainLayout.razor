@@ -6,6 +6,9 @@
 @inject BisleriumCafe.Services.AuthService _authService;
 @inject BisleriumCafe.Repositories.Repository<User> _usersRepository;
 @inject BisleriumCafe.Repositories.Repository<Customer> _customersRepository;
+@inject BisleriumCafe.Repositories.Repository<CoffeeType> _coffeeRepository;
+@* @inject BisleriumCafe.Repositories.Repository<AddIns> _addInsRepository;
+@inject BisleriumCafe.Repositories.Repository<Order> _orderRepository; *@
 
 <MudThemeProvider />
 <MudDialogProvider />
@@ -46,8 +49,6 @@
                     <MudMenuItem Link="my-orders">My Orders</MudMenuItem>
                 }
                 <MudMenuItem OnClick="@HandleLogOut">Logout</MudMenuItem>
-
-
             }
             else
             {
@@ -107,7 +108,7 @@
             </MudNavMenu>
         </MudDrawer>
 
-        <div class="mud-height-full background-light p-4" style="overflow-y:scroll">
+        <div class="d-flex flex-column gap-4 mud-height-full background-light p-4" style="overflow-y:scroll">
             @Body
         </div>
     </MudDrawerContainer>
@@ -123,7 +124,7 @@
     {
         await _usersRepository.LoadAsync();
         await _customersRepository.LoadAsync();
-
+        await _coffeeRepository.LoadAsync();
         try
         {
             await _authService.CheckSession();

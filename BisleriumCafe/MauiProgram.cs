@@ -35,6 +35,7 @@ namespace BisleriumCafe
             builder.Services.AddJsonFileProvider();
 
             builder.Services.AddRepository();
+            builder.Services.AddCoffeeService();
 
             //builder.Services.AddSeeder();
 

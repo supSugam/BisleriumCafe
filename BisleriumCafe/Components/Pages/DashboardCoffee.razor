@@ -1,7 +1,15 @@
 ﻿@page "/dashboard/coffee"
 
 @using System.ComponentModel.DataAnnotations
+@inject BisleriumCafe.Services.CoffeeService _coffeeService;
 @inject ISnackbar Snackbar;
+@inject BisleriumCafe.Repositories.Repository<CoffeeType> _coffeeRepository;
+@inject BisleriumCafe.Repositories.Repository<User> _usersRepository;
+
+
+<MudText Typo="Typo.h3" Color="Color.Dark">
+    Add a new coffee type
+</MudText>
 
 <EditForm Model="@AddCoffeeFormModel" OnValidSubmit="OnAddCoffeeSubmit">
     <DataAnnotationsValidator />
@@ -26,15 +34,72 @@
         </MudItem>
     </MudGrid>
 </EditForm>
+<MudTable Items="@Elements" Dense="false" Hover="true" Bordered="true" Striped="false" Filter="new Func<CoffeeType,bool>(FilterFunc1)" @bind-SelectedItem="selectedItem1">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6" Color="Color.Dark">Coffee Types</MudText>
+        <MudSpacer />
+        <MudTextField @bind-Value="searchString1" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+       <MudTh Style="white-space: nowrap;"><MudTableSortLabel SortBy="new Func<CoffeeType, object>(x=>x.CoffeeName)">Name</MudTableSortLabel></MudTh>
+<MudTh Style="white-space: nowrap;"><MudTableSortLabel SortBy="new Func<CoffeeType, object>(x=>x.CoffeeDescription)">Description</MudTableSortLabel></MudTh>
+<MudTh Style="white-space: nowrap;"><MudTableSortLabel SortBy="new Func<CoffeeType, object>(x=>x.CoffeePrice)">Price</MudTableSortLabel></MudTh>
+<MudTh Style="white-space: nowrap;"><MudTableSortLabel SortBy="new Func<CoffeeType, object>(x=>x.CreatedBy)">Added By</MudTableSortLabel></MudTh>
+
+    </HeaderContent>
+    <RowTemplate>
+<MudTd DataLabel="Name">@context.CoffeeName</MudTd>
+<MudTd DataLabel="Description">@context.CoffeeDescription</MudTd>
+<MudTd DataLabel="Price">@context.CoffeePrice</MudTd>
+<MudTd DataLabel="Added By">
+@if (context.CreatedBy is not null)
+    {
+        <MudText Typo="Typo.body2">@_coffeeService.GetCreatedBy(context.CreatedBy)</MudText>
+    }
+    else
+    {
+        <MudText Typo="Typo.body2">--</MudText>
+    }
+</MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager />
+        </PagerContent>
+    </MudTable>
 
 
-@code {
+    @code {
 
     bool success;
 
     AddCoffeeForm AddCoffeeFormModel = new AddCoffeeForm();
+
     AddAddInsForm AddAddInsFormModel = new AddAddInsForm();
 
+    //
+    private string searchString1 = "";
+    private CoffeeType selectedItem1;
+    private IEnumerable<CoffeeType> Elements = new List<CoffeeType>();
+    private int IndexNo = 0;
+    private string GetIndex()
+    {
+        IndexNo++;
+        return IndexNo.ToString();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Elements = _coffeeRepository.GetAll();
+    }
+    private bool FilterFunc1(CoffeeType coffeeType) => FilterFunc(coffeeType, searchString1);
+    private bool FilterFunc(CoffeeType coffeeType, string searchString)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (coffeeType.CoffeeName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        return false;
+    }
     public class AddCoffeeForm
     {
         [Required]
@@ -59,26 +124,27 @@
         public int AddInsPrice { get; set; } = 0;
     }
 
-    private void OnAddCoffeeSubmit(EditContext context)
+    private async void OnAddCoffeeSubmit(EditContext context)
     {
         success = true;
         StateHasChanged();
         string coffeeName = AddCoffeeFormModel.CoffeeName;
-string coffeeDescription = AddCoffeeFormModel.CoffeeDescription;
-int coffeePrice = AddCoffeeFormModel.CoffeePrice;
+        string coffeeDescription = AddCoffeeFormModel.CoffeeDescription;
+        int coffeePrice = AddCoffeeFormModel.CoffeePrice;
 
         try
         {
-            bool registered = await _authService.Register(username, fullName, password, UserRole.Admin);
-            success = registered;
-            if (registered)
+            CoffeeType coffeeType = new CoffeeType(coffeeName, coffeeDescription, coffeePrice);
+            bool IsCoffeeAdded = await _coffeeService.StoreACoffeeType(coffeeType);
+            success = IsCoffeeAdded;
+            if (success)
             {
-                Snackbar.Add("Registered successfully, redirecting to login", MudBlazor.Severity.Success);
-                _navigationManager.NavigateTo("/login");
+                AddCoffeeFormModel = new();
+                Snackbar.Add("Coffee added successfully.", MudBlazor.Severity.Success);
             }
             else
             {
-                Snackbar.Add("Registration failed", MudBlazor.Severity.Error);
+                Snackbar.Add("Failed to add a coffee type.", MudBlazor.Severity.Error);
             }
         }
         catch (Exception ex)
