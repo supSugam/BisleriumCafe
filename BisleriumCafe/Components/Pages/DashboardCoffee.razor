@@ -1,13 +1,14 @@
 ﻿@page "/dashboard/coffee"
 
 @using System.ComponentModel.DataAnnotations
+@using BisleriumCafe.Components.Reusables
+@using BisleriumCafe.Components.Coffee
 @inject BisleriumCafe.Services.CoffeeService _coffeeService;
 @inject ISnackbar Snackbar;
 @inject BisleriumCafe.Repositories.Repository<CoffeeType> _coffeeRepository;
 @inject BisleriumCafe.Repositories.Repository<User> _usersRepository;
 
-
-<MudText Typo="Typo.h3" Color="Color.Dark">
+<MudText Typo="Typo.h2" Color="Color.Dark">
     Add a new coffee type
 </MudText>
 
@@ -34,7 +35,7 @@
         </MudItem>
     </MudGrid>
 </EditForm>
-<MudTable Items="@Elements" Dense="false" Hover="true" Bordered="true" Striped="false" Filter="new Func<CoffeeType,bool>(FilterFunc1)" @bind-SelectedItem="selectedItem1">
+<MudTable Items="@Elements" Dense="false" Hover="true" Bordered="true" Striped="false" Filter="new Func<CoffeeType,bool>(FilterFunc1)" @bind-SelectedItem="SelectedCoffeeType">
     <ToolBarContent>
         <MudText Typo="Typo.h6" Color="Color.Dark">Coffee Types</MudText>
         <MudSpacer />
@@ -45,6 +46,7 @@
 <MudTh Style="white-space: nowrap;"><MudTableSortLabel SortBy="new Func<CoffeeType, object>(x=>x.CoffeeDescription)">Description</MudTableSortLabel></MudTh>
 <MudTh Style="white-space: nowrap;"><MudTableSortLabel SortBy="new Func<CoffeeType, object>(x=>x.CoffeePrice)">Price</MudTableSortLabel></MudTh>
 <MudTh Style="white-space: nowrap;"><MudTableSortLabel SortBy="new Func<CoffeeType, object>(x=>x.CreatedBy)">Added By</MudTableSortLabel></MudTh>
+        <MudTh Style="white-space: nowrap;">Actions</MudTh>
 
     </HeaderContent>
     <RowTemplate>
@@ -61,34 +63,51 @@
         <MudText Typo="Typo.body2">--</MudText>
     }
 </MudTd>
+        <MudTd DataLabel="Actions">
+            <MudButton OnClick="(()=>OnEditCoffeeClick(context))"
+                Icon="@Icons.Material.Filled.Edit" Color="Color.Dark" Size="Size.Small" Class="mr-2" />
+            <MudButton Icon="@Icons.Material.Filled.Delete" Color="Color.Dark" Size="Size.Small" />
+</MudTd>
         </RowTemplate>
         <PagerContent>
             <MudTablePager />
         </PagerContent>
     </MudTable>
+    @if(SelectedCoffeeType is not null){
+    <EditCoffeeType IsOpen="IsEditModalOpen" coffeeType="SelectedCoffeeType" OnCancelClick="HandleCancelEdit" />
+    }
 
 
-    @code {
+@code {
 
     bool success;
 
-    AddCoffeeForm AddCoffeeFormModel = new AddCoffeeForm();
+    CoffeeForm AddCoffeeFormModel = new CoffeeForm();
 
     AddAddInsForm AddAddInsFormModel = new AddAddInsForm();
 
     //
     private string searchString1 = "";
-    private CoffeeType selectedItem1;
+    bool IsEditModalOpen = false;
+    private CoffeeType SelectedCoffeeType {get;set;}
     private IEnumerable<CoffeeType> Elements = new List<CoffeeType>();
-    private int IndexNo = 0;
-    private string GetIndex()
+
+
+    private void OnEditCoffeeClick(CoffeeType coffeeType)
     {
-        IndexNo++;
-        return IndexNo.ToString();
+        SelectedCoffeeType = coffeeType;
+        IsEditModalOpen = true;
     }
+
+    private void HandleCancelEdit()
+    {
+        IsEditModalOpen = false;
+    }
+
 
     protected override async Task OnInitializedAsync()
     {
+        await Task.Delay(0);
         Elements = _coffeeRepository.GetAll();
     }
     private bool FilterFunc1(CoffeeType coffeeType) => FilterFunc(coffeeType, searchString1);
@@ -100,7 +119,8 @@
             return true;
         return false;
     }
-    public class AddCoffeeForm
+
+    public class CoffeeForm
     {
         [Required]
         [MinLength(3, ErrorMessage = "Name length must be at least 3 characters long.")]
@@ -111,6 +131,7 @@
         [Range(0, 1000, ErrorMessage = "Price must be between 0 and 1000.")]
         public int CoffeePrice { get; set; } = 0;
     }
+
 
     public class AddAddInsForm
     {
@@ -160,7 +181,4 @@
         success = true;
         StateHasChanged();
     }
-
-}
-
-
+    }

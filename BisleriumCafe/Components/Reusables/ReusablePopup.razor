@@ -1,0 +1,26 @@
+﻿<MudPopover Open="@IsOpen" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" Class="px-4 pt-4">
+		<div class="d-flex flex-column pa-1 gap-3">
+            <div class="d-flex flex-row gap-1 align-items-cemter">
+<MudIcon Icon="@TitleIcon" Class="mr-3 mb-n1" />
+<MudText Typo="Typo.h6" Color="Color.Dark">@Title</MudText>
+                </div>
+                @ChildContent
+            <div class="d-flex flex-row gap-2 justify-content-end">
+            <MudButton Variant="Variant.Filled" OnClick="@OnCancelClick" Color="Color.Secondary">Close</MudButton>
+            <MudButton Variant="Variant.Filled" OnClick="@OnConfirmClick" Color="ConfirmButtonColor">@ConfirmButtonText</MudButton>
+                </div>
+		</div>
+	</MudPopover>
+
+@code {
+
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    [Parameter] public string? TitleIcon { get; set; }
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string? ConfirmButtonText { get; set; }= "Confirm";
+    [Parameter] public Color ConfirmButtonColor { get; set; } = Color.Dark;
+    [Parameter] public EventCallback OnConfirmClick { get; set; } 
+    [Parameter] public EventCallback OnCancelClick { get; set; }
+
+}
