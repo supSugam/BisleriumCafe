@@ -5,6 +5,7 @@
 @using BisleriumCafe.Services
 @inject ISnackbar Snackbar;
 @inject BisleriumCafe.Services.AuthService _authService;
+@inject Microsoft.AspNetCore.Components.NavigationManager _navigationManager;
 
 <EditForm Model="@EditPersonalDetailsModel" OnValidSubmit="OnDetailsSubmit">
     <DataAnnotationsValidator />
@@ -80,7 +81,7 @@ class EditPasswordForm
         [StringLength(32, ErrorMessage = "Password must be at least 8 characters long.", MinimumLength = 4)]
         public string OldPassword { get; set; } = "";
         [Required]
-        [StringLength(32, ErrorMessage = "Password must be at least 8 characters long.", MinimumLength = 4)]
+        [StringLength(32, ErrorMessage = "Password must be at least 8 characters long.", MinimumLength = 8)]
         public string Password { get; set; } = "";
 
         [Required]
@@ -95,6 +96,15 @@ EditPasswordForm EditPasswordModel = new EditPasswordForm();
             {
                 TaskResponse response = await _authService.UpdateUserPassword(EditPasswordModel.OldPassword, EditPasswordModel.Password);
                 Snackbar.Add(response.Message, response.IsSuccess ? Severity.Success : Severity.Error);
+                if(response.IsSuccess)
+                {
+                    EditPasswordModel.OldPassword = "";
+                    EditPasswordModel.Password = "";
+                    EditPasswordModel.RePassword = "";
+                    _authService.LogOut();
+                _navigationManager.NavigateTo("/");
+                }
+
             }
             catch (Exception e)
             {
