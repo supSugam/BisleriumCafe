@@ -1,0 +1,67 @@
+﻿<EditForm OnValidSubmit="OnFormSubmit"
+    Model="@EditAddInFormModel">
+    <DataAnnotationsValidator />
+    <MudGrid>
+        <MudItem xs="12" sm="12">
+            <MudCard>
+                <MudCardContent>
+                    <MudTextField Label="Add-in Name" HelperText="Enter name of the coffee add-in."
+                                  @bind-Value="EditAddInFormModel.AddInName" For="@(() => EditAddInFormModel.AddInName)" Required="true" />
+
+                    <MudTextField Label="Add-in Description" HelperText="Enter description for add-in."
+                                  @bind-Value="EditAddInFormModel.AddInDescription" For="@(() => EditAddInFormModel.AddInDescription)" />
+
+                    <MudNumericField @bind-Value="EditAddInFormModel.AddInPrice" Label="Add-in Price" Min="0" Max="1000" Step="10" HideSpinButtons="true" Required="true" />
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Dark" Class="ml-auto">
+                        Update
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</EditForm>
+
+@code {
+    [Parameter] public CoffeeAddIn CoffeeAddIn { get; set; }
+    [Parameter] public Func<CoffeeAddIn, Task> OnConfirmEditClick { get; set; }
+    AddInsForm EditAddInFormModel = new AddInsForm();
+
+    private void OnFormSubmit(EditContext context)
+    {
+        StateHasChanged();
+
+        CoffeeAddIn coffeeAddIn = new CoffeeAddIn
+        (
+            EditAddInFormModel.AddInName, EditAddInFormModel.AddInDescription, EditAddInFormModel.AddInPrice
+        );
+        coffeeAddIn.Id = CoffeeAddIn.Id;
+        coffeeAddIn.CreatedBy = CoffeeAddIn.CreatedBy;
+        coffeeAddIn.CreatedAt = CoffeeAddIn.CreatedAt;
+        coffeeAddIn.UpdatedAt = DateTime.Now;
+
+         OnConfirmEditClick(coffeeAddIn);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        EditAddInFormModel.AddInName = CoffeeAddIn.AddInName;
+        EditAddInFormModel.AddInDescription = CoffeeAddIn.AddInDescription;
+        EditAddInFormModel.AddInPrice = CoffeeAddIn.AddInPrice;
+    }
+
+    public class AddInsForm
+    {
+        [Required]
+        [MinLength(3, ErrorMessage = "Name length must be at least 3 characters long.")]
+        public string AddInName { get; set; } = "";
+
+        public string AddInDescription { get; set; } = "";
+
+        [Range(0, 1000, ErrorMessage = "Price must be between 0 and 1000.")]
+        public int AddInPrice { get; set; } = 0;
+    }
+}
+
+

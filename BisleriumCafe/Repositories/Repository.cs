@@ -15,6 +15,11 @@ internal class Repository<TSource> : RepositoryIO<TSource>, IRepository<TSource>
         _sourceData.Add(item);
     }
 
+    public virtual bool Remove(TSource item)
+    {
+        return _sourceData.Remove(item);
+    }
+
     public virtual void Clear()
     {
         _sourceData.Clear();
@@ -50,8 +55,15 @@ internal class Repository<TSource> : RepositoryIO<TSource>, IRepository<TSource>
         };
     }
 
-    public virtual bool Remove(TSource item)
+    public virtual bool Update(TSource item)
     {
-        return _sourceData.Remove(item);
+        TSource? oldItem = Get(x => x.Id, item.Id);
+        if (oldItem is null)
+        {
+            return false;
+        }
+        Remove(oldItem);
+        Add(item);
+        return true;
     }
 }

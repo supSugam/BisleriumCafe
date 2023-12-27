@@ -6,12 +6,12 @@ namespace BisleriumCafe.Model;
         public Guid Id { get; set; } = Guid.NewGuid();
         public string CoffeeName { get; set; }
         public string CoffeeDescription { get; set; }
-        public double CoffeePrice { get; set; }
+        public int CoffeePrice { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime UpdatedAt { get; set; } = DateTime.Now;
     public Guid? CreatedBy { get; set; }
 
-        public CoffeeType(string coffeeName, string coffeeDescription, double coffeePrice)
+        public CoffeeType(string coffeeName, string coffeeDescription, int coffeePrice)
         {
             CoffeeName = coffeeName;
             CoffeeDescription = coffeeDescription;

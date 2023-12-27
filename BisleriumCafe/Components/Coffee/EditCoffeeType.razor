@@ -1,57 +1,65 @@
-﻿@using BisleriumCafe.Components.Reusables
-@inject IDialogService DialogService;
+<EditForm OnValidSubmit="OnFormSubmit"
+    Model="@EditCoffeeFormModel">
+    <DataAnnotationsValidator />
+    <MudGrid>
+        <MudItem xs="12" sm="12">
+            <MudCard>
+                <MudCardContent>
+                    <MudTextField Label="Coffee Name" HelperText="Enter name of the coffee."
+                                  @bind-Value="EditCoffeeFormModel.CoffeeName" For="@(() => EditCoffeeFormModel.CoffeeName)" Required="true" />
 
-<ReusablePopup OnCancelClick="OnCancelClick"
-                 OnConfirmClick="HandleConfirmEdit" IsOpen="IsOpen">
-    <EditForm Model="@EditCoffeeFormModel">
-        <DataAnnotationsValidator />
-        <MudGrid>
-            <MudItem xs="12" sm="12">
-                <MudCard>
-                    <MudCardContent>
-                        <MudTextField Label="Coffee Name" HelperText="Enter name of the coffee."
-                                      @bind-Value="EditCoffeeFormModel.CoffeeName" For="@(() => EditCoffeeFormModel.CoffeeName)" Required="true" />
+                    <MudTextField Label="Coffee Description" HelperText="Enter description of the coffee."
+                                  @bind-Value="EditCoffeeFormModel.CoffeeDescription" For="@(() => EditCoffeeFormModel.CoffeeDescription)" />
 
-                        <MudTextField Label="Coffee Description" HelperText="Enter description of the coffee."
-                                      @bind-Value="EditCoffeeFormModel.CoffeeDescription" For="@(() => EditCoffeeFormModel.CoffeeDescription)" />
+                    <MudNumericField @bind-Value="EditCoffeeFormModel.CoffeePrice" Label="Coffee Price" Min="0" Max="1000" Step="10" HideSpinButtons="true" Required="true" />
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Dark" Class="ml-auto">
+                        Update
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</EditForm>
 
-                        <MudNumericField @bind-Value="EditCoffeeFormModel.CoffeePrice" Label="Coffee Price" Min="0" Max="1000" Step="10" HideSpinButtons="true" Required="true" />
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
-        </MudGrid>
-    </EditForm>
-</ReusablePopup>
-@code{
-    [Parameter] public CoffeeType coffeeType { get; set; }
-    [Parameter] public EventCallback OnCancelClick { get; set; }
-    [Parameter] public bool IsOpen { get; set; }
-    EditCoffeeForm EditCoffeeFormModel = new EditCoffeeForm();
+@code {
+    [Parameter] public CoffeeType CoffeeType { get; set; }
+    [Parameter] public Func<CoffeeType, Task> OnConfirmEditClick { get; set; }
+    CoffeeForm EditCoffeeFormModel = new CoffeeForm();
 
-    // Edit Coffee Type
-    private void HandleConfirmEdit()
+    private void OnFormSubmit(EditContext context)
     {
+        StateHasChanged();
 
+        CoffeeType coffeeType = new CoffeeType
+        (
+            EditCoffeeFormModel.CoffeeName,EditCoffeeFormModel.CoffeeDescription,EditCoffeeFormModel.CoffeePrice
+        );
+        coffeeType.Id = CoffeeType.Id;
+        coffeeType.CreatedBy = CoffeeType.CreatedBy;
+        coffeeType.CreatedAt = CoffeeType.CreatedAt;
+coffeeType.UpdatedAt = DateTime.Now;
+
+         OnConfirmEditClick(coffeeType);
     }
-    protected override void OnInitialized()
+
+    protected override async Task OnInitializedAsync()
     {
-        if (coffeeType is null) return;
-        EditCoffeeFormModel.CoffeeName = coffeeType.CoffeeName;
-        EditCoffeeFormModel.CoffeeDescription = coffeeType.CoffeeDescription;
-        EditCoffeeFormModel.CoffeePrice = (int) coffeeType.CoffeePrice;
-        DialogService.Show<EditCoffeeType>("Edit Coffee");
+        EditCoffeeFormModel.CoffeeName = CoffeeType.CoffeeName;
+        EditCoffeeFormModel.CoffeeDescription = CoffeeType.CoffeeDescription;
+        EditCoffeeFormModel.CoffeePrice = CoffeeType.CoffeePrice;
     }
 
-
-    public class EditCoffeeForm
+    public class CoffeeForm
     {
         [Required]
         [MinLength(3, ErrorMessage = "Name length must be at least 3 characters long.")]
-        public string CoffeeName { get; set; }
+        public string CoffeeName { get; set; } = "";
 
-        public string CoffeeDescription { get; set; }
+        public string CoffeeDescription { get; set; } = "";
 
         [Range(0, 1000, ErrorMessage = "Price must be between 0 and 1000.")]
-        public int CoffeePrice { get; set; }
+        public int CoffeePrice { get; set; } = 0;
     }
 }

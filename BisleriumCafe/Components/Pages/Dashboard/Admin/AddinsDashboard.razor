@@ -1,0 +1,233 @@
+﻿@page "/dashboard/addins"
+
+@using System.ComponentModel.DataAnnotations
+@using BisleriumCafe.Components.Reusables
+@using BisleriumCafe.Components.Coffee
+@inject BisleriumCafe.Services.CoffeeService _coffeeService;
+@inject ISnackbar Snackbar;
+@inject IDialogService DialogService;
+@inject BisleriumCafe.Repositories.Repository<CoffeeAddIn> _addInRepository;
+
+<MudText Typo="Typo.h4" Color="Color.Dark">
+    Addins for Coffee
+</MudText>
+
+<EditForm Model="@AddAddInsFormModel" OnValidSubmit="OnAddAddinSubmit">
+    <DataAnnotationsValidator />
+    <MudGrid>
+        <MudItem xs="12" sm="12">
+            <MudCard>
+                                <MudCardContent>
+                    <MudTextField Label="Add-in Name" HelperText="Enter name of the coffee add-in."
+                                  @bind-Value="AddAddInsFormModel.AddInName" For="@(() => AddAddInsFormModel.AddInName)" Required="true" />
+
+                    <MudTextField Label="Add-in Description" HelperText="Enter description for add-in."
+                                  @bind-Value="AddAddInsFormModel.AddInDescription" For="@(() => AddAddInsFormModel.AddInDescription)" />
+
+                    <MudNumericField @bind-Value="AddAddInsFormModel.AddInPrice" Label="Add-in Price" Min="0" Max="1000" Step="10" HideSpinButtons="true" Required="true" />
+                </MudCardContent>
+
+                <MudCardActions>
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Dark" Class="ml-auto">
+                        Add Add-in
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</EditForm>
+<MudTable Items="@Elements" Dense="false" Hover="true" Bordered="true" Striped="false" Filter="new Func<CoffeeAddIn,bool>(FilterFunc1)" @bind-SelectedItem="SelectedAddinType">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6" Color="Color.Dark">Add-ins for Coffee</MudText>
+        <MudSpacer />
+        <MudTextField @bind-Value="searchString1" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh Style="white-space: nowrap;"><MudTableSortLabel SortBy="new Func<CoffeeAddIn, object>(x=>x.AddInName)">Name</MudTableSortLabel></MudTh>
+        <MudTh Style="white-space: nowrap;"><MudTableSortLabel SortBy="new Func<CoffeeAddIn, object>(x=>x.AddInDescription)">Description</MudTableSortLabel></MudTh>
+        <MudTh Style="white-space: nowrap;"><MudTableSortLabel SortBy="new Func<CoffeeAddIn, object>(x=>x.AddInPrice)">Price</MudTableSortLabel></MudTh>
+        <MudTh Style="white-space: nowrap;"><MudTableSortLabel SortBy="new Func<CoffeeAddIn, object>(x=>x.CreatedBy)">Added By</MudTableSortLabel></MudTh>
+        <MudTh Style="white-space: nowrap;">Actions</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Name">@context.AddInName</MudTd>
+            <MudTd DataLabel="Description">@context.AddInDescription</MudTd>
+            <MudTd DataLabel="Price">@context.AddInPrice</MudTd>
+            <MudTd DataLabel="Added By">
+                @if (context.CreatedBy is not null)
+            {
+                <MudText Typo="Typo.body2">@_coffeeService.GetCreatedBy(context.CreatedBy)</MudText>
+            }
+            else
+            {
+                <MudText Typo="Typo.body2">--</MudText>
+            }
+        </MudTd>
+        <MudTd DataLabel="Actions">
+
+            <MudButton OnClick="(()=>UpdateSelectedCoffeeAddIn(context))" Color="Color.Dark" Size="Size.Small" Class="mr-3 cursor-pointer">
+                <MudIcon Icon="@Icons.Material.Filled.Edit" Color="Color.Dark" Size="Size.Small" />
+
+            </MudButton>
+            <MudButton OnClick="(()=>OnDeleteAddInClick(context))" Color="Color.Dark" Size="Size.Small" Class="mr-3 cursor-pointer">
+                <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Dark" Size="Size.Small" />
+            </MudButton>
+
+        </MudTd>
+    </RowTemplate>
+    <PagerContent>
+        <MudTablePager />
+    </PagerContent>
+</MudTable>
+
+
+@code {
+    AddInsForm AddAddInsFormModel = new AddInsForm();
+    private IEnumerable<CoffeeAddIn> Elements = new List<CoffeeAddIn>();
+    private CoffeeAddIn SelectedAddinType;
+    private string searchString1 = "";
+    private DialogReference EditDialogRef;
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(0);
+        Elements = _addInRepository.GetAll();
+    }
+
+    private bool FilterFunc1(CoffeeAddIn coffeeAddIn) => FilterFunc(coffeeAddIn, searchString1);
+    private bool FilterFunc(CoffeeAddIn coffeeAddIn, string searchString)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (coffeeAddIn.AddInName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        return false;
+    }
+
+
+    private async Task UpdateSelectedCoffeeAddIn(CoffeeAddIn coffeeAddIn)
+    {
+        StateHasChanged();
+        try
+        {
+            bool IsAddinsUpdated = await _coffeeService.UpdateACoffeeAddIn(coffeeAddIn);
+            if (IsAddinsUpdated)
+            {
+                Snackbar.Add("Addin updated successfully.", MudBlazor.Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("Failed to update coffee addin.", MudBlazor.Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, MudBlazor.Severity.Error);
+        }
+        finally
+        {
+            EditDialogRef.Close();
+        }
+    }
+
+    private RenderFragment GetRenderFragment(CoffeeAddIn coffeeAddIn)
+    {
+        RenderFragment fragment = builder =>
+        {
+            builder.OpenComponent(0, typeof(EditCoffeeAddIn));
+            builder.AddAttribute(1, "CoffeeAddin", coffeeAddIn);
+            builder.AddAttribute(2, "OnConfirmEditClick", (CoffeeAddIn ca) => UpdateSelectedCoffeeAddIn(ca));
+            builder.CloseComponent();
+        };
+        return fragment;
+    }
+
+    private void OnEditCoffeeClick(CoffeeAddIn coffeeAddIn)
+    {
+        var parameters = new DialogParameters<Dialog>();
+        parameters.Add(nameof(Dialog.ChildContent), GetRenderFragment(coffeeAddIn));
+        parameters.Add("Title", "Edit Coffee");
+        parameters.Add("ShowDialogActions", false);
+        SelectedAddinType = coffeeAddIn;
+        EditDialogRef = (DialogReference) DialogService.Show<Dialog>("Edit Add-in", parameters);
+
+    }
+
+    private async Task OnDeleteAddInClick(CoffeeAddIn coffeeAddIn)
+    {
+        var parameters = new DialogParameters<Dialog>();
+        parameters.Add("Title", "Edit Coffee");
+        parameters.Add("TitleIcon", Icons.Material.Filled.DeleteForever);
+        parameters.Add("ConfirmButtonText", "Delete");
+        parameters.Add("ConfirmButtonColor", Color.Error);
+
+        RenderFragment rf =@<MudText Typo="Typo.body1" Color="Color.Dark"> Deleting a coffee addin is permanent, Are you sure you want to delete ?</MudText>;
+
+        parameters.Add(nameof(Dialog.ChildContent), rf);
+
+        var dialog = await DialogService.ShowAsync<Dialog>("Delete Coffee", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            try
+            {
+                bool IsCoffeeDeleted = await _coffeeService.DeleteACoffeeAddIn(coffeeAddIn);
+                if (IsCoffeeDeleted)
+                {
+                    Snackbar.Add("Coffee deleted successfully.", MudBlazor.Severity.Success);
+                }
+                else
+                {
+                    Snackbar.Add("Failed to delete a coffee type.", MudBlazor.Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add(ex.Message, MudBlazor.Severity.Error);
+            }
+        }
+
+
+    }
+
+
+    public class AddInsForm
+    {
+        [Required]
+        [MinLength(3, ErrorMessage = "Name length must be at least 3 characters long.")]
+        public string AddInName { get; set; } = "";
+
+        public string AddInDescription { get; set; } = "";
+
+        [Range(0, 1000, ErrorMessage = "Price must be between 0 and 1000.")]
+        public int AddInPrice { get; set; } = 0;
+    }
+
+    private async void OnAddAddinSubmit(EditContext context)
+    {
+        StateHasChanged();
+string addInName = AddAddInsFormModel.AddInName;
+        string addInDescription = AddAddInsFormModel.AddInDescription;
+int addInPrice = AddAddInsFormModel.AddInPrice;
+
+        try
+        {
+            CoffeeAddIn coffeeAddIn = new CoffeeAddIn(addInName, addInDescription, addInPrice);
+            bool IsAddInAdded = await _coffeeService.StoreACoffeeAddIn(coffeeAddIn);
+            if (IsAddInAdded)
+            {
+                AddAddInsFormModel = new();
+                Snackbar.Add("Coffee added successfully.", MudBlazor.Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("Failed to add a coffee type.", MudBlazor.Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, MudBlazor.Severity.Error);
+        }
+
+    }
+}
