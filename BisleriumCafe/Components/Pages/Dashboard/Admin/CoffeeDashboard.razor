@@ -88,7 +88,7 @@
 
     private string searchString1 = "";
     private CoffeeType SelectedCoffeeType;
-    private DialogReference EditDialogRef;
+    private IDialogReference EditDialogRef;
 
 
     private IEnumerable<CoffeeType> Elements = new List<CoffeeType>();
@@ -137,7 +137,7 @@
         parameters.Add("Title", "Edit Coffee");
         parameters.Add("ShowDialogActions", false);
         SelectedCoffeeType = coffeeType;
-        EditDialogRef = (DialogReference) DialogService.Show<Dialog>("Edit Coffee", parameters);
+        EditDialogRef = DialogService.Show<Dialog>("Edit Coffee", parameters);
 
     }
 

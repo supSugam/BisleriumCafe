@@ -11,11 +11,11 @@ public class CoffeeAddIn : IModel
     public DateTime UpdatedAt { get; set; } = DateTime.Now;
     public Guid? CreatedBy { get; set; }
 
-    public CoffeeAddIn(string coffeeName, string coffeeDescription, int coffeePrice)
+    public CoffeeAddIn(string addInName, string addInDescription, int addInPrice)
     {
-        AddInName = coffeeName;
-        AddInDescription = coffeeDescription;
-        AddInPrice = coffeePrice;
+        AddInName = addInName;
+        AddInDescription = addInDescription;
+        AddInPrice = addInPrice;
     }
 
 }

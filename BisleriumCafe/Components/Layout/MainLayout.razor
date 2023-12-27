@@ -7,8 +7,7 @@
 @inject BisleriumCafe.Repositories.Repository<User> _usersRepository;
 @inject BisleriumCafe.Repositories.Repository<Customer> _customersRepository;
 @inject BisleriumCafe.Repositories.Repository<CoffeeType> _coffeeRepository;
-@* @inject BisleriumCafe.Repositories.Repository<AddIns> _addInsRepository;
-@inject BisleriumCafe.Repositories.Repository<Order> _orderRepository; *@
+ @inject BisleriumCafe.Repositories.Repository<CoffeeAddIn> _addInsRepository;
 
 <MudThemeProvider />
 <MudDialogProvider />
@@ -75,7 +74,8 @@
                     {
                         <MudNavGroup Icon="@Icons.Material.Filled.Dashboard" Title="Dashboard" @bind-Expanded=IsDashboardMenuExpanded>
                             <MudNavLink Href="/dashboard/coffee">Coffees</MudNavLink>
-                            <MudNavLink Href="/staffs">Staffs</MudNavLink>
+                            <MudNavLink Href="/dashboard/addins">Add-Ins</MudNavLink>
+                            <MudNavLink Href="/dashboard/staffs">Staffs</MudNavLink>
                         </MudNavGroup>
 
                     }
@@ -125,6 +125,7 @@
         await _usersRepository.LoadAsync();
         await _customersRepository.LoadAsync();
         await _coffeeRepository.LoadAsync();
+await _addInsRepository.LoadAsync();
         try
         {
             await _authService.CheckSession();
