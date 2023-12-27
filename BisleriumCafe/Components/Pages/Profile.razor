@@ -1,0 +1,119 @@
+﻿@page "/profile"
+
+@using System.ComponentModel.DataAnnotations
+@using BisleriumCafe.Helpers
+@using BisleriumCafe.Services
+@inject ISnackbar Snackbar;
+@inject BisleriumCafe.Services.AuthService _authService;
+
+<EditForm Model="@EditPersonalDetailsModel" OnValidSubmit="OnDetailsSubmit">
+    <DataAnnotationsValidator />
+    <MudGrid>
+        <MudItem xs="12" sm="12">
+            <MudCard>
+                <MudCardContent>
+                    <MudTextField Label="Full name" HelperText="Atleast 3 characters."
+                                  @bind-Value="EditPersonalDetailsModel.FullName" For="@(() => EditPersonalDetailsModel.FullName)" />
+                    <MudTextField Label="Username" HelperText="Atleast 3 characters."
+                                  @bind-Value="EditPersonalDetailsModel.Username" For="@(() => EditPersonalDetailsModel.Username)" />
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Update</MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</EditForm>
+
+<EditForm Model="@EditPasswordModel" OnValidSubmit="OnPasswordSubmit">
+    <DataAnnotationsValidator />
+    <MudGrid>
+        <MudItem xs="12" sm="12">
+            <MudCard>
+<MudCardContent>
+<MudTextField Label="Old Password" HelperText="Enter your old password" Class="mt-3"
+                              @bind-Value="EditPasswordModel.OldPassword" For="@(() => EditPasswordModel.OldPassword)" InputType="InputType.Password" />
+                <MudTextField Label="Password" HelperText="Choose a strong password" Class="mt-3"
+                              @bind-Value="EditPasswordModel.Password" For="@(() => EditPasswordModel.Password)" InputType="InputType.Password" />
+                <MudTextField Label="Password" HelperText="Repeat the password" Class="mt-3"
+                              @bind-Value="EditPasswordModel.RePassword" For="@(() => EditPasswordModel.RePassword)" InputType="InputType.Password" />
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Update</MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</EditForm>
+
+@code {
+
+    class EditPersonalDetailsForm
+    {
+        [Required]
+        [StringLength(32, ErrorMessage = "Name should be 3 to 32 characters long. ", MinimumLength = 3)]
+        public string FullName { get; set; } = "";
+
+        [Required]
+        [StringLength(32, ErrorMessage = "Username should be 3 to 32 characters long. ", MinimumLength = 3)]
+        public string Username { get; set; } = "";
+    }
+    EditPersonalDetailsForm EditPersonalDetailsModel = new EditPersonalDetailsForm();
+
+    private async void OnDetailsSubmit(EditContext context)
+    {
+        try
+        {
+
+            TaskResponse response = await _authService.UpdatePersonalDetails(EditPersonalDetailsModel.FullName, EditPersonalDetailsModel.Username);
+            Snackbar.Add(response.Message, response.IsSuccess ? Severity.Success : Severity.Error);
+        }
+        catch (Exception e)
+        {
+            Snackbar.Add(e.Message, Severity.Error);
+        }
+    }
+
+class EditPasswordForm
+    {
+        [Required]
+        [StringLength(32, ErrorMessage = "Password must be at least 8 characters long.", MinimumLength = 4)]
+        public string OldPassword { get; set; } = "";
+        [Required]
+        [StringLength(32, ErrorMessage = "Password must be at least 8 characters long.", MinimumLength = 4)]
+        public string Password { get; set; } = "";
+
+        [Required]
+        [Compare(nameof(Password), ErrorMessage = "Password does not match.")]
+        public string RePassword { get; set; } = "";
+    }
+EditPasswordForm EditPasswordModel = new EditPasswordForm();
+    
+        private async void OnPasswordSubmit(EditContext context)
+        {
+            try
+            {
+                TaskResponse response = await _authService.UpdateUserPassword(EditPasswordModel.OldPassword, EditPasswordModel.Password);
+                Snackbar.Add(response.Message, response.IsSuccess ? Severity.Success : Severity.Error);
+            }
+            catch (Exception e)
+            {
+                Snackbar.Add(e.Message, Severity.Error);
+            }
+        }
+
+        protected override async Task OnInitializedAsync()
+        {
+            try
+            {
+                User user = _authService.CurrentUser;
+EditPersonalDetailsModel.FullName = user.FullName;
+EditPersonalDetailsModel.Username = user.UserName;
+            }
+            catch (Exception e)
+            {
+                Snackbar.Add(e.Message, Severity.Error);
+            }
+        }
+
+}

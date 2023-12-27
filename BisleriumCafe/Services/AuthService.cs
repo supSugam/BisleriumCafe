@@ -150,4 +150,76 @@ internal class AuthService(Repository<User> userRepository, Repository<Customer>
 
         CurrentUser = user;
     }
+
+    public async Task<TaskResponse> UpdatePersonalDetails(string fullName, string userName)
+    {
+        TaskResponse response = new();
+        response.IsSuccess = false;
+        if (CurrentUser is null)
+        {
+            response.Message = "User not found!";
+            return response;
+        }
+
+        if (CurrentUser.FullName == fullName && CurrentUser.UserName == userName)
+        {
+            response.Message = "No changes made!";
+            return response;
+
+        }
+
+        if (_userRepository.HasUserName(userName) && CurrentUser.UserName != userName)
+        {
+            response.Message = "Username already exists!";
+            return response;
+        }
+        response.IsSuccess = true;
+        response.Message = "Personal details updated successfully!";
+
+        CurrentUser.FullName = fullName;
+        CurrentUser.UserName = userName;
+        await _userRepository.FlushAsync();
+        if(CurrentUser.Role == UserRole.Customer)
+        {
+            CurrentCustomer.FullName = fullName;
+            CurrentCustomer.UserName = userName;
+            await _customerRepository.FlushAsync();
+        }
+        return response;
+    }
+
+    public async Task<TaskResponse> UpdateUserPassword(string oldPassword, string newPassword)
+    {
+        TaskResponse response = new();
+        response.IsSuccess = false;
+        if (CurrentUser is null)
+        {
+            response.Message = "User not found!";
+            return response;
+        }
+
+        if (!Hasher.VerifyHash(oldPassword, CurrentUser.PasswordHash))
+        {
+            response.Message = "Old password is incorrect!";
+            return response;
+        }
+
+        if (oldPassword == newPassword)
+        {
+            response.Message = "New password must be different from current password.";
+            return response;
+        }
+        response.IsSuccess = true;
+        response.Message = "Password changed successfully!";
+
+        CurrentUser.PasswordHash = Hasher.HashSecret(newPassword);
+        await _userRepository.FlushAsync();
+        if(CurrentUser.Role == UserRole.Customer)
+        {
+            CurrentCustomer.PasswordHash = Hasher.HashSecret(newPassword);
+            await _customerRepository.FlushAsync();
+        }
+        return response;
+    }
+
 }
