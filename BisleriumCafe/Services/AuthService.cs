@@ -38,14 +38,15 @@ internal class AuthService(Repository<User> userRepository, Repository<Customer>
         return username;
     }
 
-    public async Task<bool> Register(string username, string fullname,string password, UserRole role)
+    public async Task<TaskResponse> Register(string username, string fullname,string password, UserRole role)
     {
+        TaskResponse response = new();
+        response.IsSuccess = false;
         if (_userRepository.HasUserName(username))
         {
-            return false;
+          response.Message = "Username already exists!";
+            return response;
         }
-
-
 
         User user = new()
         {
@@ -72,7 +73,45 @@ internal class AuthService(Repository<User> userRepository, Repository<Customer>
             _customerRepository.Add(customer);
             await _customerRepository.FlushAsync();
         }   
-        return true;
+        response.IsSuccess = true;
+        response.Message = "User registered successfully!";
+        return response;
+    }
+
+    public async Task<TaskResponse> RemoveUser(Guid userId)
+    {
+        TaskResponse response = new();
+        response.IsSuccess = false;
+        if (CurrentUser is null)
+        {
+            response.Message = "User not found!";
+            return response;
+        }
+
+        if(CurrentUser.Role != UserRole.Admin)
+        {
+            response.Message = "You are not authorized to perform this action!";
+            return response;
+        }
+
+        if (CurrentUser.Id == userId)
+        {
+            response.Message = "You cannot delete yourself!";
+            return response;
+        }
+
+        User? user = _userRepository.Get(x => x.Id, userId);
+        if (user is null)
+        {
+            response.Message = "User not found!";
+            return response;
+        }
+
+        _userRepository.Remove(user);
+        await _userRepository.FlushAsync();
+        response.IsSuccess = true;
+        response.Message = "User removed successfully!";
+        return response;
     }
 
     public async Task<bool> Login(string userName, string password, bool stayLoggedIn)
@@ -185,6 +224,47 @@ internal class AuthService(Repository<User> userRepository, Repository<Customer>
             CurrentCustomer.UserName = userName;
             await _customerRepository.FlushAsync();
         }
+        return response;
+    }
+
+    public async Task<TaskResponse> UpdateUserDetails(Guid userId, string fullName, string userName, string passwordHash)
+    {
+        TaskResponse response = new();
+        response.IsSuccess = false;
+        if (CurrentUser is null)
+        {
+            response.Message = "Need to login.";
+            return response;
+        }
+
+        if (CurrentUser.Role != UserRole.Admin || CurrentUser.Id == userId)
+        {
+            response.Message = "You are not authorized to perform this action!";
+            return response;
+        }
+
+        User? user = _userRepository.Get(x => x.Id, userId);
+        if (user is null)
+        {
+            response.Message = "User not found!";
+            return response;
+        }
+
+        if (user.FullName == fullName && user.UserName == userName && string.IsNullOrEmpty(passwordHash))
+        {
+            response.Message = "No changes made!";
+            return response;
+        }
+        user.UserName = userName;
+        user.FullName = fullName;
+        if (!string.IsNullOrEmpty(passwordHash))
+        {
+            user.PasswordHash = Hasher.HashSecret(passwordHash);
+        }
+        _userRepository.Update(user);  
+        await _userRepository.FlushAsync();
+        response.IsSuccess = true;
+        response.Message = "User details updated successfully!";
         return response;
     }
 

@@ -24,7 +24,7 @@
                                   @bind-Value="model.RePassword" For="@(() => model.RePassword)" InputType="InputType.Password" />
                 </MudCardContent>
                 <MudCardActions>
-                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Register</MudButton>
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Dark" Class="ml-auto">Register</MudButton>
                 </MudCardActions>
             </MudCard>
         </MudItem>
@@ -74,18 +74,9 @@
         }
         try
         {
-            // bool registered = await _authService.Register(username,fullName, password, UserRole.Admin);
-bool registered = await _authService.Register(username, fullName, password, UserRole.Customer);
-            success = registered;
-            if (registered)
-            {
-                Snackbar.Add("Registered successfully, redirecting to login", MudBlazor.Severity.Success);
-                _navigationManager.NavigateTo("/login");
-            }
-            else
-            {
-                Snackbar.Add("Registration failed", MudBlazor.Severity.Error);
-            }
+TaskResponse response = await _authService.Register(username, fullName, password, UserRole.Customer);
+            Snackbar.Add(response.Message, response.IsSuccess ? MudBlazor.Severity.Success : MudBlazor.Severity.Error);
+           
         }
         catch (Exception ex)
         {

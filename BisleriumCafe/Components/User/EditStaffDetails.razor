@@ -1,0 +1,77 @@
+﻿@using BisleriumCafe.Helpers;
+
+<EditForm Model="@EditStaffFormModel" OnValidSubmit="OnFormSubmit">
+    <DataAnnotationsValidator />
+    <MudGrid>
+        <MudItem xs="12" sm="12">
+            <MudCard>
+                <MudCardContent>
+                    <MudTextField Label="Full name" HelperText="Atleast 3 characters."
+                                  @bind-Value="EditStaffFormModel.FullName" For="@(() => EditStaffFormModel.FullName)" />
+                    <MudTextField Label="Username" HelperText="Atleast 3 characters."
+                                  @bind-Value="EditStaffFormModel.Username" For="@(() => EditStaffFormModel.Username)" />
+
+                    <MudSwitch Label="Change Password" @bind-Value="@ChangePassword" Color="Color.Dark" UnCheckedColor="Color.Default" />
+@if (ChangePassword)
+                    {
+                        <MudTextField Label="New Password" HelperText="Enter the password" Class="mt-3"
+                                      @bind-Value="EditStaffFormModel.Password" For="@(() => EditStaffFormModel.Password)" InputType="InputType.Password" />
+                    }
+
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Dark" Class="ml-auto">Update</MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</EditForm>
+
+@code {
+    [Parameter] public User User { get; set; }
+    [Parameter] public Func<User, Task> OnConfirmEditClick { get; set; }
+    private bool ChangePassword = false;
+    EditStaffForm EditStaffFormModel = new();
+
+    private void OnFormSubmit(EditContext context)
+    {
+        StateHasChanged();
+
+        User user = new User
+        (
+            EditStaffFormModel.FullName, EditStaffFormModel.Username, EditStaffFormModel.Password,UserRole.Staff
+        );
+        user.Id = User.Id;
+        user.CreatedAt = User.CreatedAt;
+        user.CreatedBy = User.CreatedBy;
+        if(ChangePassword)
+        {
+            user.PasswordHash = Hasher.HashSecret(EditStaffFormModel.Password);
+        }
+        else
+        {
+            user.PasswordHash = User.PasswordHash;
+        }
+
+        OnConfirmEditClick(user);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        EditStaffFormModel.FullName = User.FullName;
+        EditStaffFormModel.Username = User.UserName;
+    }
+
+    class EditStaffForm
+    {
+        [Required]
+        [StringLength(32, ErrorMessage = "Name should be 3 to 32 characters long. ", MinimumLength = 3)]
+        public string FullName { get; set; } = "";
+
+        [Required]
+        [StringLength(32, ErrorMessage = "Username should be 3 to 32 characters long. ", MinimumLength = 3)]
+        public string Username { get; set; } = "";
+
+        public string Password { get; set; } = "";
+    }
+}
