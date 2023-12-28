@@ -1,0 +1,39 @@
+<MudItem xs="6" sm="3" Style="height:170px">
+
+
+    <MudCard Class="position-relative w-100 h-100 mud-width-full bg-transparent d-flex p-2 flex-column gap-1">
+        <MudImage Src="assets/images/Coffee.jpg"
+Class="position-absolute w-100 h-100 opacity-25 z-index-0"
+                    Style="object-fit:cover !important;"
+                    Alt="Coffee Image - Bislerium Cafe" />
+        <MudText Typo="Typo.h6" Class="fw-bold  ls-tighter">@CoffeeType.CoffeeName</MudText>
+                <MudText Class="line-clamp-2" Typo="Typo.body2">@CoffeeType.CoffeeDescription</MudText>
+<div class="d-flex justify-content-between align-items-center">
+                <MudCheckBox @bind-Value="IsSelected"
+                             Label="@(IsSelected ? "Selected" : "Select")"
+                             Color="Color.Dark"
+                             CheckedIcon="@Icons.Material.Filled.CheckCircle"
+                             UncheckedIcon="@Icons.Material.Filled.Circle"
+                             @onclick="OnCheckboxClicked"></MudCheckBox>
+                <MudButton Size="Size.Small" Variant="Variant.Text"  Class="ml-auto">
+                    <MudText Typo="Typo.body1" Class="fw-bold">
+                        Rs. @CoffeeType.CoffeePrice
+                </MudText>
+                </MudButton>
+</div>
+</MudCard>
+</MudItem>
+
+@code{
+    [Parameter]
+    public CoffeeType CoffeeType { get; set; }
+    [Parameter]
+    public bool IsSelected { get; set; }
+    [Parameter]
+    public EventCallback<CoffeeType?> OnSelectClick { get; set; }
+
+    private async Task OnCheckboxClicked()
+    {
+        await OnSelectClick.InvokeAsync(IsSelected ? null : CoffeeType);
+    }
+}

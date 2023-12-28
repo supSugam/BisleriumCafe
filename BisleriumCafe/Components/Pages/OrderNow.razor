@@ -1,0 +1,33 @@
+﻿@page "/order-now"
+@using BisleriumCafe.Components.Coffee;
+@inject BisleriumCafe.Repositories.Repository<CoffeeType> _coffeeRepository;
+
+
+<MudGrid>
+    @foreach (CoffeeType coffeeType in _coffeeTypes)
+    {
+        <CoffeeCard IsSelected="@IsCoffeeTypeSelected(coffeeType)"
+                    OnSelectClick="(CoffeeType? coffeeType)=>OnCoffeeCardClick(coffeeType)"
+            CoffeeType="coffeeType" />
+    }
+</MudGrid>
+
+
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        _coffeeTypes = _coffeeRepository.GetAll();
+    }
+
+    private IEnumerable<CoffeeType> _coffeeTypes;
+    private CoffeeType? SelectedCoffeeType { get; set; }
+
+    private CoffeeType? OnCoffeeCardClick(CoffeeType? coffeeType) => SelectedCoffeeType = coffeeType;
+
+    private bool IsCoffeeTypeSelected(CoffeeType coffeeType)
+    {
+        return SelectedCoffeeType != null && SelectedCoffeeType.Id == coffeeType.Id;
+    }
+
+}

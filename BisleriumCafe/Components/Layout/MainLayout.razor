@@ -70,6 +70,12 @@
 
                 @if (_authService.CurrentUser is not null)
                 {
+@if (_authService.CurrentUser.Role == UserRole.Customer)
+                    {
+                        <MudNavLink Href="/order-now" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ShoppingCart" IconColor="Color.Dark" Class="d-flex align-items-center">
+                            <MudText Typo="Typo.h6" Color="Color.Dark">Order Now</MudText>
+                        </MudNavLink>
+                    }
                     @if (_authService.CurrentUser.Role == UserRole.Admin)
                     {
                         <MudNavGroup Icon="@Icons.Material.Filled.Dashboard" Title="Dashboard" @bind-Expanded=IsDashboardMenuExpanded>

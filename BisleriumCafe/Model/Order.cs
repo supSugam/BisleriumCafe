@@ -10,27 +10,17 @@ namespace BisleriumCafe.Model
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         public Guid CustomerId { get; set; }
-        public Guid ProductId { get; set; }
+        public Guid CoffeeTypeId { get; set; }
+        public Guid CoffeeAddInId { get; set; }
         public int Quantity { get; set; }
-        public CoffeeType CoffeeType { get; set; }
-        //public CoffeeAddIns coffeeAddIns { get; set; }
-        
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime UpdatedAt { get; set; } = DateTime.Now;
 
+        public decimal TotalPrice { get; set; }
+        public decimal Price { get; set; }
 
-        public Order CreateAnOrder()
-        {
-            return new Order
-            {
-                Id = Id,
-                CustomerId = CustomerId,
-                ProductId = ProductId,
-                Quantity = Quantity,
-                CreatedAt = CreatedAt,
-                UpdatedAt = UpdatedAt
-            };
-             }
+
+
     }
 }
