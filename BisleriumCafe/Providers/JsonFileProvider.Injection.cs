@@ -6,6 +6,7 @@ internal static class JsonFileProvider
     {
         return services.AddSingleton<FileProvider<User>, JsonFileProvider<User>>()
             .AddSingleton<FileProvider<CoffeeType>, JsonFileProvider<CoffeeType>>().AddSingleton<FileProvider<Customer>, JsonFileProvider<Customer>>()
-        .AddSingleton<FileProvider<CoffeeAddIn>, JsonFileProvider<CoffeeAddIn>>();
+        .AddSingleton<FileProvider<CoffeeAddIn>, JsonFileProvider<CoffeeAddIn>>()
+        .AddSingleton<FileProvider<Order>, JsonFileProvider<Order>>();
     }
 }

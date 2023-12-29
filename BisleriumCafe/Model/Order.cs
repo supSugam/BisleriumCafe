@@ -6,20 +6,24 @@ using System.Threading.Tasks;
 
 namespace BisleriumCafe.Model
 {
-    internal class Order
+    internal class Order: IModel
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         public Guid CustomerId { get; set; }
-        public Guid CoffeeTypeId { get; set; }
-        public Guid CoffeeAddInId { get; set; }
+        public CoffeeType CoffeeType { get; set; }
+
+        public CoffeeAddIn CoffeeAddIn { get; set; }
         public int Quantity { get; set; }
 
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-        public DateTime UpdatedAt { get; set; } = DateTime.Now;
+        public DateTime OrderDate { get; set; } = DateTime.Now;
+        public decimal Discount { get; set; }
+        public decimal GrandTotal { get; set; }
+        public decimal Total { get; set; }
+        public decimal ServiceCharge { get; set; }
 
-        public decimal TotalPrice { get; set; }
-        public decimal Price { get; set; }
-
+        public Order()
+        {
+        }
 
 
     }

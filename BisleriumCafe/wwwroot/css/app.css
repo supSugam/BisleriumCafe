@@ -55,6 +55,21 @@ display: -webkit-box;
     overflow: hidden;
 }
 
+.coffee-background {
+    background-image: linear-gradient(104deg, rgba(27, 29, 30, 0.4) 50%,rgb(0, 0, 0)), url("../assets/images/Coffee.jpg");
+background-size: cover;
+background-position: center;
+background-repeat: no-repeat;
+}
+
+.scale-on-hover{
+transition: all 0.2s ease-in-out;
+cursor:pointer;
+}
+.scale-on-hover:hover{
+transform: scale(1.02);
+}
+
 /*a, .btn-link {
     color: #006bb7;
 }

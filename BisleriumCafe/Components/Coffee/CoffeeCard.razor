@@ -1,27 +1,25 @@
-<MudItem xs="6" sm="3" Style="height:170px">
+<MudItem xs="12" sm="3" Style="height:170px; !important;">
 
-
-    <MudCard Class="position-relative w-100 h-100 mud-width-full bg-transparent d-flex p-2 flex-column gap-1">
-        <MudImage Src="assets/images/Coffee.jpg"
-Class="position-absolute w-100 h-100 opacity-25 z-index-0"
-                    Style="object-fit:cover !important;"
-                    Alt="Coffee Image - Bislerium Cafe" />
-        <MudText Typo="Typo.h6" Class="fw-bold  ls-tighter">@CoffeeType.CoffeeName</MudText>
-                <MudText Class="line-clamp-2" Typo="Typo.body2">@CoffeeType.CoffeeDescription</MudText>
-<div class="d-flex justify-content-between align-items-center">
-                <MudCheckBox @bind-Value="IsSelected"
-                             Label="@(IsSelected ? "Selected" : "Select")"
-                             Color="Color.Dark"
-                             CheckedIcon="@Icons.Material.Filled.CheckCircle"
-                             UncheckedIcon="@Icons.Material.Filled.Circle"
-                             @onclick="OnCheckboxClicked"></MudCheckBox>
-                <MudButton Size="Size.Small" Variant="Variant.Text"  Class="ml-auto">
-                    <MudText Typo="Typo.body1" Class="fw-bold">
-                        Rs. @CoffeeType.CoffeePrice
-                </MudText>
+    <MudCard Class="position-relative w-100 h-100 mud-width-full bg-transparent p-1 d-flex flex-column gap-1 coffee-background">
+        <div class="d-flex gap-1 flex-column w-100 h-100 justify-content-center" style="z-index:5 !important">
+            <MudText Typo="Typo.h6" Class="fw-bold ls-tighter pl-2 text-white">@CoffeeType.CoffeeName</MudText>
+                <MudText Class="line-clamp-2 pl-2 text-white" Typo="Typo.body2">@CoffeeType.CoffeeDescription</MudText>
+                <div class="d-flex justify-content-between align-items-center w-100">
+                    <MudCheckBox @bind-Value="IsSelected"
+                                 Label="@(IsSelected ? "Selected" : "Select")"
+                                 Style="padding:0 !important;margin:0!important"
+                                 Class="text-white"
+                                 CheckedIcon="@Icons.Material.Filled.CheckCircle"
+                                 UncheckedIcon="@Icons.Material.Filled.Circle"
+                                 @onclick="OnCheckboxClicked"></MudCheckBox>
+                    <MudButton Size="Size.Small" Variant="Variant.Text" Class="ml-auto text-white">
+                        <MudText Color="Color.Default" Typo="Typo.body1" Class="fw-bold">
+                            Rs. @CoffeeType.CoffeePrice
+                    </MudText>
                 </MudButton>
-</div>
-</MudCard>
+            </div>
+                  </div>
+    </MudCard>
 </MudItem>
 
 @code{

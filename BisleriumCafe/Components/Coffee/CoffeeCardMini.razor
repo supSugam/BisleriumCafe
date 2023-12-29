@@ -1,0 +1,46 @@
+<MudItem xs="12"
+         sm="6"
+         md="4"
+         lg="3" Style="height:100px !important;">
+    <MudCard Class="@($"{GetClassesForSelected()} w-100 h-100 mud-width-full bg-transparent d-flex scale-on-hover")" @onclick="OnCheckboxClicked">
+        <div class="d-flex gap-1 flex-column justify-content-center w-75">
+            <MudText Color="Color.Dark" Typo="Typo.body1" Class="fw-bold ls-tighter pl-2">@CoffeeType.CoffeeName</MudText>
+                <div class="d-flex justify-content-between align-items-center w-100">
+                    <MudCheckBox @bind-Value="IsSelected"
+                                 Label="Select"
+                                 Style="padding:0 !important;margin:0!important;user-select:none;pointer-events:none"
+                                 Class="fw-semibold ls-tight"
+                                 Color="Color.Dark"
+                                 CheckedIcon="@Icons.Material.Filled.CheckCircle"
+                                 UncheckedIcon="@Icons.Material.Filled.Circle"
+                                ></MudCheckBox>
+                    <MudText Color="Color.Dark" Typo="Typo.body1" Class="fw-bold mr-2">
+                            Rs. @CoffeeType.CoffeePrice
+                    </MudText>
+            </div>
+        </div>
+        <div class="d-flex position-relative rounded overflow-hidden w-25" style="height:100%">
+            <MudImage Fluid="true" Class="mx-auto my-auto w-100 h-100 position-absolute" Alt="Coffee Carousel Image - Bislerium Cafe" Src="assets/images/Coffee.jpg"
+                      Style="object-fit:cover !important;" />
+        </div>
+    </MudCard>
+</MudItem>
+
+@code {
+    [Parameter]
+    public CoffeeType CoffeeType { get; set; }
+    [Parameter]
+    public bool IsSelected { get; set; }
+    [Parameter]
+    public EventCallback<CoffeeType?> OnSelectClick { get; set; }
+
+    public string GetClassesForSelected()
+    {
+        return IsSelected ? "shadow-2" : "";
+    }
+
+    private async Task OnCheckboxClicked()
+    {
+        await OnSelectClick.InvokeAsync(IsSelected ? null : CoffeeType);
+    }
+}

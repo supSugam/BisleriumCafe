@@ -8,6 +8,7 @@
 @inject BisleriumCafe.Repositories.Repository<Customer> _customersRepository;
 @inject BisleriumCafe.Repositories.Repository<CoffeeType> _coffeeRepository;
  @inject BisleriumCafe.Repositories.Repository<CoffeeAddIn> _addInsRepository;
+ @inject BisleriumCafe.Repositories.Repository<Order> _orderRepository;
 
 <MudThemeProvider />
 <MudDialogProvider />
@@ -132,6 +133,8 @@
         await _customersRepository.LoadAsync();
         await _coffeeRepository.LoadAsync();
         await _addInsRepository.LoadAsync();
+await _orderRepository.LoadAsync();
+
         try
         {
             await _authService.CheckSession();
