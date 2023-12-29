@@ -20,6 +20,7 @@ namespace BisleriumCafe.Model
         public decimal GrandTotal { get; set; }
         public decimal Total { get; set; }
         public decimal ServiceCharge { get; set; }
+        public bool IsOrderCompleted { get; set; } = false;
 
         public Order()
         {
