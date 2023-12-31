@@ -3,6 +3,14 @@
 @inject ISnackbar Snackbar;
 @inject BisleriumCafe.Repositories.Repository<CoffeeType> _coffeeRepository;
 @inject BisleriumCafe.Repositories.Repository<CoffeeAddIn> _addinRepository;
+
+    <div class="d-flex justify-content-center gap-1">
+       <MudIcon Icon="Icons.Material.Filled.Discount" Size="Size.Medium"></MudIcon>
+        <MudText Typo="Typo.h4" Color="Color.Dark" Class="fw-semibold">
+            7% Discount on all orders above Rs. 499
+        </MudText>
+    </div>
+
 <div class="d-flex gap-3 w-100 flex-column">
     <MudText Typo="Typo.h4" Color="Color.Dark" Class="fw-semibold">
         Select Coffee Type
@@ -70,11 +78,47 @@ return;
         </div>
 
 
-        <MudText Typo="Typo.body1" Color="Color.Dark">
-            Total Price: <strong>
-                @TotalPrice
-            </strong>
-        </MudText>
+
+        <div class="d-flex gap-1 align-items-center">
+            <MudText Typo="Typo.body1" Color="Color.Dark">
+                Total Price:
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Dark" Class="ml-auto">
+                <strong>
+                    @TotalPrice
+                </strong>
+            </MudText>
+</div>
+        <div class="d-flex gap-1 align-items-center">
+            <MudText Typo="Typo.body1" Color="Color.Dark">
+                Service Charge:
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Dark" Class="ml-auto">
+                <strong>
+                    @ServiceCharge
+                </strong>
+            </MudText>
+        </div>
+        <div class="d-flex gap-1 align-items-center">
+            <MudText Typo="Typo.body1" Color="Color.Dark">
+                Discount:
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Dark" Class="ml-auto">
+                <strong>
+                    @Discount
+                </strong>
+            </MudText>
+        </div>
+        <div class="d-flex gap-1 align-items-center">
+            <MudText Typo="Typo.body1" Color="Color.Dark">
+                Grand Total:
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Dark" Class="ml-auto">
+                <strong>
+                    @GrandTotal
+                </strong>
+            </MudText>
+        </div>
         <MudButton OnClick="OnOrderSubmit" Size="Size.Medium" Color="Color.Dark" Variant="Variant.Filled" Class="mt-2">
             Order Now
         </MudButton>
@@ -95,6 +139,9 @@ return;
     private int Quantity { get; set; } = 1;
 
     private int TotalPrice => (SelectedCoffeeType?.CoffeePrice ?? 0)*Quantity + (SelectedCoffeeAddin?.AddInPrice ?? 0)*Quantity;
+    private int Discount => TotalPrice > 499 ? TotalPrice / 7 : 0;
+    private int ServiceCharge => TotalPrice / 9;
+    private int GrandTotal => TotalPrice - (Discount + ServiceCharge);
 
     private IEnumerable<CoffeeType> _coffeeTypes;
 
@@ -127,6 +174,11 @@ if(SelectedCoffeeAddin == null)
             return;
         }
 
+        Order order = new();
+order.CoffeeType = SelectedCoffeeType;
+order.CoffeeAddIn = SelectedCoffeeAddin;
+order.Quantity = Quantity;
+order.Total = TotalPrice;
 
     }
 
