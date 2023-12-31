@@ -109,6 +109,15 @@ internal class AuthService(Repository<User> userRepository, Repository<Customer>
 
         _userRepository.Remove(user);
         await _userRepository.FlushAsync();
+        if(user.Role == UserRole.Customer)
+        {
+            Customer? customer = _customerRepository.Get(x => x.Id, userId);
+            if (customer is not null)
+            {
+                _customerRepository.Remove(customer);
+                await _customerRepository.FlushAsync();
+            }
+        }
         response.IsSuccess = true;
         response.Message = "User removed successfully!";
         return response;
@@ -212,9 +221,6 @@ internal class AuthService(Repository<User> userRepository, Repository<Customer>
             response.Message = "Username already exists!";
             return response;
         }
-        response.IsSuccess = true;
-        response.Message = "Personal details updated successfully!";
-
         CurrentUser.FullName = fullName;
         CurrentUser.UserName = userName;
         await _userRepository.FlushAsync();
@@ -224,6 +230,8 @@ internal class AuthService(Repository<User> userRepository, Repository<Customer>
             CurrentCustomer.UserName = userName;
             await _customerRepository.FlushAsync();
         }
+        response.IsSuccess = true;
+        response.Message = "Personal details updated successfully!";
         return response;
     }
 

@@ -37,7 +37,6 @@
 
 @code {
     LoginAccountForm model = new LoginAccountForm();
-    bool success;
     string formData = "";
 
     public class LoginAccountForm
@@ -55,29 +54,18 @@
 
     private async void OnValidSubmit(EditContext context)
     {
-        success = true;
         StateHasChanged();
         string username = model.Username;
         string password = model.Password;
-        // await usersRepository.LoadAsync();
-        // User user = new User();
-        // user.FullName = "Admin Name";
-        // user.UserName = "admin";
-        // user.PasswordHash = Hasher.HashSecret("admin");
-        // user.Role = UserRole.Admin;
-        // usersRepository.Add(user);
-        // await usersRepository.FlushAsync();
         if (username == "" || password == "")
         {
             Snackbar.Add("Please fill all the fields", MudBlazor.Severity.Error);
-            success = false;
             return;
         }
         try
         {
             formData = username+ " " + password;
             bool loggedIn = await _authService.Login(username, password, true);
-            success = loggedIn;
 if (loggedIn)
             {
                 Snackbar.Add("Logged in successfully", MudBlazor.Severity.Success);
@@ -91,7 +79,6 @@ if (loggedIn)
         catch (Exception ex)
         {
             Snackbar.Add(ex.Message, MudBlazor.Severity.Error);
-            success = false;
         }
     }
 }

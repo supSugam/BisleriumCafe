@@ -3,26 +3,28 @@
 @inject ISnackbar Snackbar;
 @inject BisleriumCafe.Repositories.Repository<CoffeeType> _coffeeRepository;
 @inject BisleriumCafe.Repositories.Repository<CoffeeAddIn> _addinRepository;
+@inject BisleriumCafe.Services.AuthService _authService;
+@inject BisleriumCafe.Services.OrderService _orderService;
 
-    <div class="d-flex justify-content-center gap-1">
-       <MudIcon Icon="Icons.Material.Filled.Discount" Size="Size.Medium"></MudIcon>
-        <MudText Typo="Typo.h4" Color="Color.Dark" Class="fw-semibold">
-            7% Discount on all orders above Rs. 499
-        </MudText>
-    </div>
+<div class="d-flex justify-content-center gap-1">
+    <MudIcon Icon="Icons.Material.Filled.Discount" Size="Size.Medium"></MudIcon>
+    <MudText Typo="Typo.h4" Color="Color.Dark" Class="fw-semibold">
+        7% Discount on all orders above Rs. 499
+    </MudText>
+</div>
 
 <div class="d-flex gap-3 w-100 flex-column">
     <MudText Typo="Typo.h4" Color="Color.Dark" Class="fw-semibold">
         Select Coffee Type
     </MudText>
-<MudGrid>
-    @foreach (CoffeeType coffeeType in _coffeeTypes)
-    {
-        <CoffeeCardMini IsSelected="@IsCoffeeTypeSelected(coffeeType)"
-                    OnSelectClick="(CoffeeType? coffeeType)=>OnCoffeeCardClick(coffeeType)"
-            CoffeeType="coffeeType" />
-    }
-</MudGrid>
+    <MudGrid>
+        @foreach (CoffeeType coffeeType in _coffeeTypes)
+        {
+            <CoffeeCardMini IsSelected="@IsCoffeeTypeSelected(coffeeType)"
+                            OnSelectClick="(CoffeeType? coffeeType)=>OnCoffeeCardClick(coffeeType)"
+                            CoffeeType="coffeeType" />
+        }
+    </MudGrid>
 </div>
 <MudDivider />
 <div class="d-flex gap-3 w-100 flex-column">
@@ -41,43 +43,19 @@
 <MudDivider />
 <div class="d-flex justify-space-between align-items-center">
     <div class="d-flex flex-column gap-1">
-<MudText Typo="Typo.body1" Color="Color.Dark">
+
+@*         <MudText Typo="Typo.body1" Color="Color.Dark">
             Selected Coffee: <strong>
-@(SelectedCoffeeType?.CoffeeName ?? "None")
+                @(SelectedCoffeeType?.CoffeeName ?? "None")
             </strong>
         </MudText>
         <MudText Typo="Typo.body1" Color="Color.Dark">
             Selected Addin: <strong>
-@(SelectedCoffeeAddin?.AddInName ?? "None")
+                @(SelectedCoffeeAddin?.AddInName ?? "None")
             </strong>
-        </MudText>
-    </div>
-    <div class="d-flex flex-column gap-1">
-        <div class="d-flex gap-1 align-items-center">
-            <MudText Typo="Typo.body1" Color="Color.Dark">
-                Quantity:
-            </MudText>
-            <div class="d-flex gap-1 align-items-center ml-auto">
+        </MudText> *@
 
-
-
-                <MudIconButton Icon="@Icons.Material.Filled.Remove" Color="Color.Dark" OnClick="()=>{
-if(Quantity>1){
-Quantity--;
-} else{
-return;
-}
-}" />
-                <MudText Typo="Typo.body1" Color="Color.Dark">
-                    <strong>
-                        @Quantity
-                    </strong>
-                </MudText>
-                <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Dark" OnClick="()=>Quantity++" />
-            </div>
-        </div>
-
-
+        <MudSwitch Label="Redeem Free Coffee" @bind-Value="@RedeemFreeCoffee" Color="Color.Dark" UnCheckedColor="Color.Default" />
 
         <div class="d-flex gap-1 align-items-center">
             <MudText Typo="Typo.body1" Color="Color.Dark">
@@ -88,7 +66,7 @@ return;
                     @TotalPrice
                 </strong>
             </MudText>
-</div>
+        </div>
         <div class="d-flex gap-1 align-items-center">
             <MudText Typo="Typo.body1" Color="Color.Dark">
                 Service Charge:
@@ -119,6 +97,28 @@ return;
                 </strong>
             </MudText>
         </div>
+    </div>
+    <div class="d-flex flex-column gap-1">
+        <div class="d-flex gap-1 align-items-center">
+            <MudText Typo="Typo.body1" Color="Color.Dark">
+                Quantity:
+            </MudText>
+            <div class="d-flex gap-1 align-items-center ml-auto">
+
+
+
+                <MudIconButton Icon="@Icons.Material.Filled.Remove" Color="Color.Dark" OnClick="()=>{
+if(Quantity==1) return;
+Quantity--;
+}" />
+                <MudText Typo="Typo.body1" Color="Color.Dark">
+                    <strong>
+                        @Quantity
+                    </strong>
+                </MudText>
+                <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Dark" OnClick="()=>Quantity++" />
+            </div>
+        </div>
         <MudButton OnClick="OnOrderSubmit" Size="Size.Medium" Color="Color.Dark" Variant="Variant.Filled" Class="mt-2">
             Order Now
         </MudButton>
@@ -138,10 +138,12 @@ return;
     private CoffeeAddIn? SelectedCoffeeAddin { get; set; }
     private int Quantity { get; set; } = 1;
 
-    private int TotalPrice => (SelectedCoffeeType?.CoffeePrice ?? 0)*Quantity + (SelectedCoffeeAddin?.AddInPrice ?? 0)*Quantity;
+    private int TotalPrice => (SelectedCoffeeType?.CoffeePrice ?? 0) * Quantity + (SelectedCoffeeAddin?.AddInPrice ?? 0) * Quantity;
     private int Discount => TotalPrice > 499 ? TotalPrice / 7 : 0;
-    private int ServiceCharge => TotalPrice / 9;
-    private int GrandTotal => TotalPrice - (Discount + ServiceCharge);
+    private int ServiceCharge => TotalPrice / 11;
+    private int GrandTotal => TotalPrice - Discount + ServiceCharge;
+    private bool RedeemFreeCoffee { get; set; } = false;
+    private int FreeCoffeeCount => _authService.CurrentCustomer is not null ? FreeCoffeeCount:0;
 
     private IEnumerable<CoffeeType> _coffeeTypes;
 
@@ -161,25 +163,33 @@ return;
         return SelectedCoffeeAddin != null && SelectedCoffeeAddin.Id == coffeeAddin.Id;
     }
 
-    private void OnOrderSubmit()
+    private async void OnOrderSubmit()
     {
-        if(SelectedCoffeeType == null)
+        if (_authService.CurrentUser is null)
+        {
+            Snackbar.Add("Please login to place an order", Severity.Error);
+            return;
+        }
+        if (SelectedCoffeeType == null)
         {
             Snackbar.Add("Please select a coffee type", Severity.Error);
             return;
         }
-if(SelectedCoffeeAddin == null)
-        {
-            Snackbar.Add("Please select a coffee addin", Severity.Error);
-            return;
-        }
 
         Order order = new();
-order.CoffeeType = SelectedCoffeeType;
-order.CoffeeAddIn = SelectedCoffeeAddin;
-order.Quantity = Quantity;
-order.Total = TotalPrice;
+        order.CoffeeType = SelectedCoffeeType;
+        order.CoffeeAddIn = SelectedCoffeeAddin;
+        order.Quantity = Quantity;
+        order.Total = TotalPrice;
+        order.Discount = Discount;
+        order.ServiceCharge = ServiceCharge;
+        order.GrandTotal = GrandTotal;
+        if(SelectedCoffeeAddin is not null)
+        {
+           order.CoffeeAddIn = SelectedCoffeeAddin;
+        }
 
+        // TaskResponse reponse = await _orderService.OrderACoffee(order);
     }
 
 }
