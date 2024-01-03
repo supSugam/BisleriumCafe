@@ -186,9 +186,21 @@ internal class AuthService(Repository<User> userRepository, Repository<Customer>
         }
 
         User? user = _userRepository.Get(x => x.Id, session.UserId);
+        
         if (user is null)
         {
             return;
+        }
+
+        switch (user.Role)
+        {
+            case UserRole.Admin:
+                break;
+            case UserRole.Customer:
+                CurrentCustomer = _customerRepository.Get(x => x.Id, session.UserId);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
         }
 
         if (!session.IsValid())

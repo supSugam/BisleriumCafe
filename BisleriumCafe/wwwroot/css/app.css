@@ -8,7 +8,6 @@
 html, body {
     color: var(--dark);
     font-family: 'Inter', sans-serif;
-    letter-spacing: -0.1rem;
 }
 
 .fw-400{
@@ -34,6 +33,7 @@ font-weight: 800;
 *::after,
 *::before {
     box-sizing: border-box;
+    letter-spacing: -0.05rem !important;
 }
 
 .background-light {
