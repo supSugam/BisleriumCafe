@@ -14,6 +14,7 @@ namespace BisleriumCafe.Model
 
         public CoffeeAddIn? CoffeeAddIn { get; set; }
         public int Quantity { get; set; }
+        public int RedeeemFreeCoffee { get; set; }=0;
 
         public DateTime OrderDate { get; set; } = DateTime.Now;
         public decimal Discount { get; set; }

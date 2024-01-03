@@ -6,17 +6,17 @@
 @inject BisleriumCafe.Services.AuthService _authService;
 @inject BisleriumCafe.Services.OrderService _orderService;
 
-<div class="d-flex justify-content-center gap-1">
-    <MudIcon Icon="Icons.Material.Filled.Discount" Size="Size.Medium"></MudIcon>
-    <MudText Typo="Typo.h4" Color="Color.Dark" Class="fw-semibold">
-        7% Discount on all orders above Rs. 499
-    </MudText>
-</div>
 
 <div class="d-flex gap-3 w-100 flex-column">
-    <MudText Typo="Typo.h4" Color="Color.Dark" Class="fw-semibold">
+    <div class="d-flex gap-2 justify-space-between flex-wrap">
+
+    <MudText Typo="Typo.h5" Color="Color.Dark" Class="fw-600">
         Select Coffee Type
     </MudText>
+        <MudText Color="Color.Default" Typo="Typo.h6" Class="fw-700">
+            ☕ 11% Discount on orders above Rs. 499 !
+        </MudText>
+    </div>
     <MudGrid>
         @foreach (CoffeeType coffeeType in _coffeeTypes)
         {
@@ -28,7 +28,7 @@
 </div>
 <MudDivider />
 <div class="d-flex gap-3 w-100 flex-column">
-    <MudText Typo="Typo.h4" Color="Color.Dark" Class="fw-semibold">
+    <MudText Typo="Typo.h5" Color="Color.Dark" Class="fw-600">
         Select Addin for your coffee
     </MudText>
     <MudGrid>
@@ -41,89 +41,83 @@
     </MudGrid>
 </div>
 <MudDivider />
-<div class="d-flex justify-space-between align-items-center">
-    <div class="d-flex flex-column gap-1">
+@if(SelectedCoffeeType is not null)
+{
+    <div class="d-flex justify-space-between align-items-center">
+        <div class="d-flex flex-column gap-1">
+                <MudText Typo="Typo.body1" Color="Color.Dark">
+                    You have @FreeCoffeeCount free coffee(s) to redeem.
+                </MudText>
+            <MudSwitch Label="Redeem Free Coffee"
+                Disabled="FreeCoffeeCount==0"
+                @bind-Value="@RedeemFreeCoffee" Color="Color.Dark" UnCheckedColor="Color.Default" />
 
-@*         <MudText Typo="Typo.body1" Color="Color.Dark">
-            Selected Coffee: <strong>
-                @(SelectedCoffeeType?.CoffeeName ?? "None")
-            </strong>
-        </MudText>
-        <MudText Typo="Typo.body1" Color="Color.Dark">
-            Selected Addin: <strong>
-                @(SelectedCoffeeAddin?.AddInName ?? "None")
-            </strong>
-        </MudText> *@
-
-        <MudSwitch Label="Redeem Free Coffee" @bind-Value="@RedeemFreeCoffee" Color="Color.Dark" UnCheckedColor="Color.Default" />
-
-        <div class="d-flex gap-1 align-items-center">
-            <MudText Typo="Typo.body1" Color="Color.Dark">
-                Total Price:
-            </MudText>
-            <MudText Typo="Typo.body1" Color="Color.Dark" Class="ml-auto">
-                <strong>
-                    @TotalPrice
-                </strong>
-            </MudText>
+            <div class="d-flex gap-1 align-items-center">
+                <MudText Typo="Typo.body1" Color="Color.Dark">
+                    Total Price:
+                </MudText>
+                <MudText Typo="Typo.body1" Color="Color.Dark" Class="ml-auto">
+                    <strong>
+                        @TotalPrice
+                    </strong>
+                </MudText>
+            </div>
+            <div class="d-flex gap-1 align-items-center">
+                <MudText Typo="Typo.body1" Color="Color.Dark">
+                    Service Charge (10%):
+                </MudText>
+                <MudText Typo="Typo.body1" Color="Color.Dark" Class="ml-auto">
+                    <strong>
+                        @ServiceCharge
+                    </strong>
+                </MudText>
+            </div>
+            <div class="d-flex gap-1 align-items-center">
+                <MudText Typo="Typo.body1" Color="Color.Dark">
+                    Discount:
+                </MudText>
+                <MudText Typo="Typo.body1" Color="Color.Dark" Class="ml-auto">
+                    <strong>
+                        @Discount
+                    </strong>
+                </MudText>
+            </div>
+            <div class="d-flex gap-1 align-items-center">
+                <MudText Typo="Typo.body1" Color="Color.Dark">
+                    Grand Total:
+                </MudText>
+                <MudText Typo="Typo.body1" Color="Color.Dark" Class="ml-auto">
+                    <strong>
+                        @GrandTotal
+                    </strong>
+                </MudText>
+            </div>
         </div>
-        <div class="d-flex gap-1 align-items-center">
-            <MudText Typo="Typo.body1" Color="Color.Dark">
-                Service Charge:
-            </MudText>
-            <MudText Typo="Typo.body1" Color="Color.Dark" Class="ml-auto">
-                <strong>
-                    @ServiceCharge
-                </strong>
-            </MudText>
-        </div>
-        <div class="d-flex gap-1 align-items-center">
-            <MudText Typo="Typo.body1" Color="Color.Dark">
-                Discount:
-            </MudText>
-            <MudText Typo="Typo.body1" Color="Color.Dark" Class="ml-auto">
-                <strong>
-                    @Discount
-                </strong>
-            </MudText>
-        </div>
-        <div class="d-flex gap-1 align-items-center">
-            <MudText Typo="Typo.body1" Color="Color.Dark">
-                Grand Total:
-            </MudText>
-            <MudText Typo="Typo.body1" Color="Color.Dark" Class="ml-auto">
-                <strong>
-                    @GrandTotal
-                </strong>
-            </MudText>
-        </div>
-    </div>
-    <div class="d-flex flex-column gap-1">
-        <div class="d-flex gap-1 align-items-center">
-            <MudText Typo="Typo.body1" Color="Color.Dark">
-                Quantity:
-            </MudText>
-            <div class="d-flex gap-1 align-items-center ml-auto">
-
-
-
-                <MudIconButton Icon="@Icons.Material.Filled.Remove" Color="Color.Dark" OnClick="()=>{
+        <div class="d-flex flex-column gap-1">
+            <div class="d-flex gap-1 align-items-center">
+                <MudText Typo="Typo.body1" Color="Color.Dark">
+                    Quantity:
+                </MudText>
+                <div class="d-flex gap-1 align-items-center ml-auto">
+                    <MudIconButton Icon="@Icons.Material.Filled.Remove" Color="Color.Dark" OnClick="()=>{
 if(Quantity==1) return;
 Quantity--;
 }" />
-                <MudText Typo="Typo.body1" Color="Color.Dark">
-                    <strong>
-                        @Quantity
-                    </strong>
-                </MudText>
-                <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Dark" OnClick="()=>Quantity++" />
+                    <MudText Typo="Typo.body1" Color="Color.Dark">
+                        <strong>
+                            @Quantity
+                        </strong>
+                    </MudText>
+                    <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Dark" OnClick="()=>Quantity++" />
+                </div>
             </div>
+            <MudButton OnClick="OnOrderSubmit" Size="Size.Medium" Color="Color.Dark" Variant="Variant.Filled" Class="mt-2">
+                Order Now
+            </MudButton>
         </div>
-        <MudButton OnClick="OnOrderSubmit" Size="Size.Medium" Color="Color.Dark" Variant="Variant.Filled" Class="mt-2">
-            Order Now
-        </MudButton>
     </div>
-</div>
+
+}
 
 
 @code {
@@ -138,12 +132,49 @@ Quantity--;
     private CoffeeAddIn? SelectedCoffeeAddin { get; set; }
     private int Quantity { get; set; } = 1;
 
+    private int GetTotalPrice()
+    {
+        int TotalPrice = 0;
+        if (SelectedCoffeeType is null) return 0;
+        if (SelectedCoffeeAddin is not null)
+        {
+            TotalPrice = SelectedCoffeeType.CoffeePrice * Quantity + SelectedCoffeeAddin.AddInPrice * Quantity;
+        }
+        else
+        {
+            TotalPrice = SelectedCoffeeType.CoffeePrice * Quantity;
+        }
+
+
+        if(RedeemFreeCoffee && FreeCoffeeCount != 0)
+        {
+            if(Quantity == FreeCoffeeCount)
+            {
+                TotalPrice = 0;
+                RedeemedFreeCoffeeCount = Quantity;
+            }
+            if(Quantity < FreeCoffeeCount){
+                TotalPrice = TotalPrice - (SelectedCoffeeType.CoffeePrice * Quantity);
+RedeemedFreeCoffeeCount = Quantity;
+            }
+
+            if(Quantity > FreeCoffeeCount)
+            {
+                TotalPrice = TotalPrice - (SelectedCoffeeType.CoffeePrice * FreeCoffeeCount);
+RedeemedFreeCoffeeCount = FreeCoffeeCount;
+            }
+
+        }
+        return TotalPrice;
+    }
+
     private int TotalPrice => (SelectedCoffeeType?.CoffeePrice ?? 0) * Quantity + (SelectedCoffeeAddin?.AddInPrice ?? 0) * Quantity;
-    private int Discount => TotalPrice > 499 ? TotalPrice / 7 : 0;
-    private int ServiceCharge => TotalPrice / 11;
+    private int Discount => TotalPrice > 499 ? TotalPrice / 11 : 0;
+    private int ServiceCharge => TotalPrice / 10; // 10% service charge
     private int GrandTotal => TotalPrice - Discount + ServiceCharge;
     private bool RedeemFreeCoffee { get; set; } = false;
-    private int FreeCoffeeCount => _authService.CurrentCustomer is not null ? FreeCoffeeCount:0;
+    private int FreeCoffeeCount => _authService.CurrentCustomer is not null ? _authService.CurrentCustomer.FreeCoffeeCount : 0;
+    private int RedeemedFreeCoffeeCount = 0;
 
     private IEnumerable<CoffeeType> _coffeeTypes;
 
