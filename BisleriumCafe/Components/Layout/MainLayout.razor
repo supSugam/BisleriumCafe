@@ -41,7 +41,7 @@
                 }
                 @if (_authService.CurrentUser.Role == UserRole.Staff)
                 {
-                    <MudMenuItem Link="staff-dashboard">Dashboard</MudMenuItem>
+                    <MudMenuItem Link="dashboard/orders">Dashboard</MudMenuItem>
                 }
 
                 @if (_authService.CurrentUser.Role == UserRole.Customer)
@@ -89,9 +89,9 @@
 
                     @if (_authService.CurrentUser.Role == UserRole.Staff)
                     {
-                        <MudNavLink Href="/staff-dashboard" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Person" IconColor="Color.Dark" Class="d-flex align-items-center">
-                            <MudText Typo="Typo.h6" Color="Color.Dark">Dashboard</MudText>
-                        </MudNavLink>
+                        <MudNavGroup Icon="@Icons.Material.Filled.Dashboard" Title="Dashboard" @bind-Expanded=IsDashboardMenuExpanded>
+                            <MudNavLink Href="/dashboard/orders">Orders</MudNavLink>
+                        </MudNavGroup>
 
                     }
 

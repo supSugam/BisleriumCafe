@@ -98,9 +98,6 @@ EditPasswordForm EditPasswordModel = new EditPasswordForm();
                 Snackbar.Add(response.Message, response.IsSuccess ? Severity.Success : Severity.Error);
                 if(response.IsSuccess)
                 {
-                    EditPasswordModel.OldPassword = "";
-                    EditPasswordModel.Password = "";
-                    EditPasswordModel.RePassword = "";
                     _authService.LogOut();
                 _navigationManager.NavigateTo("/");
                 }

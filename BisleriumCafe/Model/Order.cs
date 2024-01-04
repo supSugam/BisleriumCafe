@@ -10,6 +10,8 @@ namespace BisleriumCafe.Model
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         public Guid CustomerId { get; set; }
+        public string CustomerName { get; set; }
+        public string CustomerUserName { get; set; }
         public CoffeeType CoffeeType { get; set; }
 
         public List<CoffeeAddIn> CoffeeAddIns { get; set; }

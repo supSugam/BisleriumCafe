@@ -58,6 +58,15 @@
     </ItemGroup>
 
     <ItemGroup>
+      <AndroidResource Remove="Components\Pages\Dashboard\NewFolder1\**" />
+      <Compile Remove="Components\Pages\Dashboard\NewFolder1\**" />
+      <Content Remove="Components\Pages\Dashboard\NewFolder1\**" />
+      <EmbeddedResource Remove="Components\Pages\Dashboard\NewFolder1\**" />
+      <MauiXaml Remove="Components\Pages\Dashboard\NewFolder1\**" />
+      <None Remove="Components\Pages\Dashboard\NewFolder1\**" />
+    </ItemGroup>
+
+    <ItemGroup>
       <Content Remove="components\pages\Login.razor" />
     </ItemGroup>
 
@@ -72,8 +81,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Components\Pages\Dashboard\NewFolder1\" />
-      <Folder Include="Components\Pages\Dashboard\NewFolder\" />
       <Folder Include="Data\" />
     </ItemGroup>
 

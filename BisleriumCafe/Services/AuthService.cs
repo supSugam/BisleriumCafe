@@ -6,37 +6,10 @@ internal class AuthService(Repository<User> userRepository, Repository<Customer>
 {
     private readonly Repository<User> _userRepository = userRepository;
     private readonly Repository<Customer> _customerRepository = customerRepository;
-
     private readonly SessionService _sessionService = sessionService;
 
     public User? CurrentUser { get; private set; }
     public Customer? CurrentCustomer { get; private set; }
-
-    public async Task<string?> SeedInitialUser()
-    {
-        if (_userRepository.GetAll().Count != 0)
-        {
-            return null;
-        }
-
-        if (_userRepository.Contains(x => x.Role, UserRole.Admin))
-        {
-            return null;
-        }
-
-        string username = "admin", pleaseChange = "Please Change!";
-        User user = new()
-        {
-            UserName = username,
-            FullName = pleaseChange,
-            PasswordHash = Hasher.HashSecret(username),
-            Role = UserRole.Admin,
-            //CreatedBy = Guid.Empty,
-        };
-        _userRepository.Add(user);
-        await _userRepository.FlushAsync();
-        return username;
-    }
 
     public async Task<TaskResponse> Register(string username, string fullname,string password, UserRole role)
     {
@@ -140,15 +113,9 @@ internal class AuthService(Repository<User> userRepository, Repository<Customer>
             Session session = Session.Generate(CurrentUser.Id, stayLoggedIn,CurrentUser.Role);
             await _sessionService.SaveSession(session);
 
-            switch (CurrentUser.Role)
+           if(CurrentUser.Role == UserRole.Customer)
             {
-                case UserRole.Admin:
-                    break;
-                case UserRole.Customer:
-                    CurrentCustomer = _customerRepository.Get(x => x.UserName, userName);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                CurrentCustomer = _customerRepository.Get(x => x.Id, CurrentUser.Id);
             }
             return true;
         }
@@ -168,7 +135,6 @@ internal class AuthService(Repository<User> userRepository, Repository<Customer>
         }
 
         CurrentUser.PasswordHash = Hasher.HashSecret(newPassword);
-        //CurrentUser.HasInitialPassword = false;
     }
 
     public void LogOut()
@@ -193,15 +159,9 @@ internal class AuthService(Repository<User> userRepository, Repository<Customer>
             return;
         }
 
-        switch (user.Role)
+        if (user.Role == UserRole.Customer)
         {
-            case UserRole.Admin:
-                break;
-            case UserRole.Customer:
-                CurrentCustomer = _customerRepository.Get(x => x.Id, session.UserId);
-                break;
-            default:
-                throw new ArgumentOutOfRangeException();
+            CurrentCustomer = _customerRepository.Get(x => x.Id, user.Id);
         }
 
         if (!session.IsValid())
@@ -237,7 +197,7 @@ internal class AuthService(Repository<User> userRepository, Repository<Customer>
         CurrentUser.FullName = fullName;
         CurrentUser.UserName = userName;
         await _userRepository.FlushAsync();
-        if(CurrentUser.Role == UserRole.Customer)
+        if(CurrentUser.Role == UserRole.Customer && CurrentCustomer is not null)
         {
             CurrentCustomer.FullName = fullName;
             CurrentCustomer.UserName = userName;
@@ -315,7 +275,7 @@ internal class AuthService(Repository<User> userRepository, Repository<Customer>
 
         CurrentUser.PasswordHash = Hasher.HashSecret(newPassword);
         await _userRepository.FlushAsync();
-        if(CurrentUser.Role == UserRole.Customer)
+        if(CurrentUser.Role == UserRole.Customer && CurrentCustomer is not null)
         {
             CurrentCustomer.PasswordHash = Hasher.HashSecret(newPassword);
             await _customerRepository.FlushAsync();

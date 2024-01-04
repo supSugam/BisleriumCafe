@@ -74,7 +74,7 @@
         }
         try
         {
-TaskResponse response = await _authService.Register(username, fullName, password, UserRole.Customer);
+TaskResponse response = await _authService.Register(username, fullName, password, UserRole.Admin);
             Snackbar.Add(response.Message, response.IsSuccess ? MudBlazor.Severity.Success : MudBlazor.Severity.Error);
            
         }

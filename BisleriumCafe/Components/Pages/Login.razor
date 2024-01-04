@@ -1,7 +1,7 @@
 @page "/login"
+@using System.ComponentModel.DataAnnotations
 @using BisleriumCafe.Helpers
 @using BisleriumCafe.Services
-@using System.ComponentModel.DataAnnotations
 @inject ISnackbar Snackbar;
 @inject Microsoft.AspNetCore.Components.NavigationManager _navigationManager;
 @inject BisleriumCafe.Services.AuthService _authService;
@@ -46,8 +46,8 @@
         [MinLength(3, ErrorMessage = "Name length must be at least 3 characters long.")]
         public string Username { get; set; }= "";
 
-        [Required]
-        [StringLength(30, ErrorMessage = "Password must be at least 8 characters long.", MinimumLength = 1)]
+        // [Required] , MinimumLength = 1
+        [StringLength(30, ErrorMessage = "Password must be at least 8 characters long.")]
         public string Password { get; set; }= "";
 
     }
@@ -57,11 +57,11 @@
         StateHasChanged();
         string username = model.Username;
         string password = model.Password;
-        if (username == "" || password == "")
-        {
-            Snackbar.Add("Please fill all the fields", MudBlazor.Severity.Error);
-            return;
-        }
+        // if (username == "" || password == "")
+        // {
+        //     Snackbar.Add("Please fill all the fields", MudBlazor.Severity.Error);
+        //     return;
+        // }
         try
         {
             formData = username+ " " + password;

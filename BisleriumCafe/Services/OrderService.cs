@@ -2,9 +2,9 @@
 using BisleriumCafe.Model;
 using BisleriumCafe.Helpers;
 using BisleriumCafe.Enums;
-internal class OrderService(Repository<User> userRepository, Repository<Order> orderRepository, AuthService _authService)
+internal class OrderService(Repository<Customer> customerRepository, Repository<Order> orderRepository, AuthService _authService)
 {
-    private readonly Repository<User> _userRepository = userRepository;
+    private readonly Repository<Customer> _customerRepository = customerRepository;
     private readonly Repository<Order> _orderRepository = orderRepository;
     private readonly Customer? CurrentCustomer = _authService.CurrentCustomer; 
 
@@ -19,6 +19,8 @@ internal class OrderService(Repository<User> userRepository, Repository<Order> o
             return response;
         }
         order.CustomerId = CurrentCustomer.Id;
+        order.CustomerName = CurrentCustomer.FullName;
+        order.CustomerUserName = CurrentCustomer.UserName;
         _orderRepository.Add(order);
         await _orderRepository.FlushAsync();
         if(order.RedeemedFreeCoffeeCount > 0)
@@ -35,9 +37,18 @@ internal class OrderService(Repository<User> userRepository, Repository<Order> o
                 CurrentCustomer.FreeCoffeeProgress = 0;
             }
         }
-        await _userRepository.FlushAsync();
-        response.IsSuccess = true;
+        bool UpdatedRepo =  _customerRepository.Update(CurrentCustomer);
+        await _customerRepository.FlushAsync();
+        response.IsSuccess = UpdatedRepo;
+        if(!UpdatedRepo)
+        {
+            response.Message = "Something went wrong while updating customer details";
+        }
+        else
+        {
+
         response.Message = "Order placed successfully";
+        }
         return response;
     }
 
@@ -45,6 +56,10 @@ internal class OrderService(Repository<User> userRepository, Repository<Order> o
     {
         if(CurrentCustomer is null) return new List<Order>();
         return _orderRepository.GetAll().Where(order => order.CustomerId == CurrentCustomer.Id);
+    }
+    public IEnumerable<Order> GetAllOrders()
+    {
+        return _orderRepository.GetAll();
     }
 
 }
