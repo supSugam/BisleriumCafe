@@ -12,9 +12,9 @@ namespace BisleriumCafe.Model
         public Guid CustomerId { get; set; }
         public CoffeeType CoffeeType { get; set; }
 
-        public CoffeeAddIn? CoffeeAddIn { get; set; }
+        public List<CoffeeAddIn> CoffeeAddIns { get; set; }
         public int Quantity { get; set; }
-        public int RedeeemFreeCoffee { get; set; }=0;
+        public int RedeemedFreeCoffeeCount { get; set; }=0;
 
         public DateTime OrderDate { get; set; } = DateTime.Now;
         public decimal Discount { get; set; }

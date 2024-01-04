@@ -1,5 +1,6 @@
 ﻿@page "/order-now"
 @using BisleriumCafe.Components.Coffee;
+@using BisleriumCafe.Helpers;
 @inject ISnackbar Snackbar;
 @inject BisleriumCafe.Repositories.Repository<CoffeeType> _coffeeRepository;
 @inject BisleriumCafe.Repositories.Repository<CoffeeAddIn> _addinRepository;
@@ -14,7 +15,7 @@
         Select Coffee Type
     </MudText>
         <MudText Color="Color.Default" Typo="Typo.h6" Class="fw-700">
-            ☕ 11% Discount on orders above Rs. 499 !
+            ☕ 11% Discount on orders above Rs. 499 ! (Capped at Rs. 101)
         </MudText>
     </div>
     <MudGrid>
@@ -35,7 +36,7 @@
         @foreach (CoffeeAddIn coffeeAddIn in _coffeeAddins)
         {
             <AddinCardMini IsSelected="@IsAddInSelected(coffeeAddIn)"
-                           OnSelectClick="(CoffeeAddIn? coffeeAddIn)=>OnCoffeeCardClick(coffeeAddIn)"
+                           OnSelectClick="(CoffeeAddIn? coffeeAddIn)=>OnCoffeeAddInClick(coffeeAddIn)"
                            CoffeeAddIn="coffeeAddIn" />
         }
     </MudGrid>
@@ -59,7 +60,7 @@
                 </MudText>
                 <MudText Typo="Typo.body1" Color="Color.Dark" Class="ml-auto">
                     <strong>
-                        @TotalPrice
+                        @TotalPrice.ToFormattedDecimal()
                     </strong>
                 </MudText>
             </div>
@@ -69,7 +70,7 @@
                 </MudText>
                 <MudText Typo="Typo.body1" Color="Color.Dark" Class="ml-auto">
                     <strong>
-                        @ServiceCharge
+                        @ServiceCharge.ToFormattedDecimal()
                     </strong>
                 </MudText>
             </div>
@@ -79,7 +80,7 @@
                 </MudText>
                 <MudText Typo="Typo.body1" Color="Color.Dark" Class="ml-auto">
                     <strong>
-                        @Discount
+                        @Discount.ToFormattedDecimal()
                     </strong>
                 </MudText>
             </div>
@@ -89,7 +90,7 @@
                 </MudText>
                 <MudText Typo="Typo.body1" Color="Color.Dark" Class="ml-auto">
                     <strong>
-                        @GrandTotal
+                        @GrandTotal.ToFormattedDecimal()
                     </strong>
                 </MudText>
             </div>
@@ -130,21 +131,24 @@ Quantity--;
 
     // Data for Order
     private CoffeeType? SelectedCoffeeType { get; set; }
-    private CoffeeAddIn? SelectedCoffeeAddin { get; set; }
+    private List<CoffeeAddIn> SelectedCoffeeAddins = new();
     private int Quantity { get; set; } = 1;
 
     private decimal GetTotalPrice()
     {
         decimal TotalPrice = 0;
         if (SelectedCoffeeType is null) return 0;
-        if (SelectedCoffeeAddin is not null)
-        {
-            TotalPrice = SelectedCoffeeType.CoffeePrice * Quantity + SelectedCoffeeAddin.AddInPrice * Quantity;
-        }
-        else
-        {
-            TotalPrice = SelectedCoffeeType.CoffeePrice * Quantity;
-        }
+        // if (SelectedCoffeeAddin is not null)
+        // {
+        //     TotalPrice = SelectedCoffeeType.CoffeePrice * Quantity + SelectedCoffeeAddin.AddInPrice * Quantity;
+        // }
+        // else
+        // {
+        //     TotalPrice = SelectedCoffeeType.CoffeePrice * Quantity;
+        // }
+        SelectedCoffeeAddins.ForEach(addin => TotalPrice += addin.AddInPrice * Quantity);
+TotalPrice += SelectedCoffeeType.CoffeePrice * Quantity;
+
 
 
         if(RedeemFreeCoffee && FreeCoffeeCount != 0)
@@ -170,7 +174,7 @@ Quantity--;
     }
 
     private decimal TotalPrice => GetTotalPrice();
-    private decimal Discount => TotalPrice > 499 ? TotalPrice / 11 : 0;
+    private decimal Discount => TotalPrice > 499 ? TotalPrice / 11 > 101 ? 101 : TotalPrice / 11 : 0;
     private decimal ServiceCharge => TotalPrice / 10; // 10% service charge
     private decimal GrandTotal => TotalPrice - Discount + ServiceCharge;
     private bool RedeemFreeCoffee { get; set; } = false;
@@ -188,11 +192,23 @@ Quantity--;
 
     private IEnumerable<CoffeeAddIn> _coffeeAddins;
 
-    private CoffeeAddIn? OnCoffeeCardClick(CoffeeAddIn? coffeeAddin) => SelectedCoffeeAddin = coffeeAddin;
+    private void OnCoffeeAddInClick(CoffeeAddIn? coffeeAddin)
+
+{
+    if(coffeeAddin is null) return;
+        if (SelectedCoffeeAddins.Contains(coffeeAddin))
+        {
+            SelectedCoffeeAddins.Remove(coffeeAddin);
+        }
+        else
+        {
+            SelectedCoffeeAddins.Add(coffeeAddin);
+        }
+    }
 
     private bool IsAddInSelected(CoffeeAddIn coffeeAddin)
     {
-        return SelectedCoffeeAddin != null && SelectedCoffeeAddin.Id == coffeeAddin.Id;
+        return SelectedCoffeeAddins.Contains(coffeeAddin);
     }
 
     private async void OnOrderSubmit()
@@ -210,18 +226,18 @@ Quantity--;
 
         Order order = new();
         order.CoffeeType = SelectedCoffeeType;
-        order.CoffeeAddIn = SelectedCoffeeAddin;
+        order.CoffeeAddIns = SelectedCoffeeAddins;
         order.Quantity = Quantity;
         order.Total = TotalPrice;
         order.Discount = Discount;
         order.ServiceCharge = ServiceCharge;
         order.GrandTotal = GrandTotal;
-        if(SelectedCoffeeAddin is not null)
+        if(RedeemFreeCoffee)
         {
-           order.CoffeeAddIn = SelectedCoffeeAddin;
+            order.RedeemedFreeCoffeeCount = RedeemedFreeCoffeeCount;
         }
 
-        // TaskResponse reponse = await _orderService.OrderACoffee(order);
+        // // // TaskResponse reponse = await _orderService.OrderACoffee(order);
     }
 
 }

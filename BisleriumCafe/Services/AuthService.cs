@@ -65,6 +65,7 @@ internal class AuthService(Repository<User> userRepository, Repository<Customer>
         {
             Customer customer = new()
             {
+                Id=user.Id,
                 UserName = username,
                 FullName = fullname,
                 PasswordHash = Hasher.HashSecret(password),
