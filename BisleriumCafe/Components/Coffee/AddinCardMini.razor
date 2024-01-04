@@ -42,6 +42,6 @@ lg="3"
 
     private async Task OnCheckboxClicked()
     {
-        await OnSelectClick.InvokeAsync(IsSelected ? null : CoffeeAddIn);
+        await OnSelectClick.InvokeAsync(CoffeeAddIn);
     }
 }

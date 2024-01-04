@@ -72,6 +72,8 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="Components\Pages\Dashboard\NewFolder1\" />
+      <Folder Include="Components\Pages\Dashboard\NewFolder\" />
       <Folder Include="Data\" />
     </ItemGroup>
 

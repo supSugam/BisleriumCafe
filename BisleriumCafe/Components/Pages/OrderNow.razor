@@ -1,12 +1,14 @@
 ﻿@page "/order-now"
 @using BisleriumCafe.Components.Coffee;
+@using BisleriumCafe.Components.Reusables;
 @using BisleriumCafe.Helpers;
 @inject ISnackbar Snackbar;
 @inject BisleriumCafe.Repositories.Repository<CoffeeType> _coffeeRepository;
 @inject BisleriumCafe.Repositories.Repository<CoffeeAddIn> _addinRepository;
 @inject BisleriumCafe.Services.AuthService _authService;
 @inject BisleriumCafe.Services.OrderService _orderService;
-
+@inject IDialogService DialogService;
+@inject NavigationManager _navigationManager;
 
 <div class="d-flex gap-3 w-100 flex-column">
     <div class="d-flex gap-2 justify-space-between flex-wrap">
@@ -147,7 +149,7 @@ Quantity--;
         //     TotalPrice = SelectedCoffeeType.CoffeePrice * Quantity;
         // }
         SelectedCoffeeAddins.ForEach(addin => TotalPrice += addin.AddInPrice * Quantity);
-TotalPrice += SelectedCoffeeType.CoffeePrice * Quantity;
+        TotalPrice += SelectedCoffeeType.CoffeePrice * Quantity;
 
 
 
@@ -159,13 +161,13 @@ TotalPrice += SelectedCoffeeType.CoffeePrice * Quantity;
                 RedeemedFreeCoffeeCount = Quantity;
             }
             if(Quantity < FreeCoffeeCount){
-                TotalPrice = TotalPrice - (SelectedCoffeeType.CoffeePrice * Quantity);
+                TotalPrice = TotalPrice - (SelectedCoffeeType.CoffeePrice * Quantity + SelectedCoffeeAddins.Sum(addin=>addin.AddInPrice * Quantity));
                 RedeemedFreeCoffeeCount = Quantity;
             }
 
             if(Quantity > FreeCoffeeCount)
             {
-                TotalPrice = TotalPrice - (SelectedCoffeeType.CoffeePrice * FreeCoffeeCount);
+                TotalPrice = TotalPrice - (SelectedCoffeeType.CoffeePrice * FreeCoffeeCount + SelectedCoffeeAddins.Sum(addin=>addin.AddInPrice * FreeCoffeeCount));
                 RedeemedFreeCoffeeCount = FreeCoffeeCount;
             }
 
@@ -237,7 +239,37 @@ TotalPrice += SelectedCoffeeType.CoffeePrice * Quantity;
             order.RedeemedFreeCoffeeCount = RedeemedFreeCoffeeCount;
         }
 
-        // // // TaskResponse reponse = await _orderService.OrderACoffee(order);
+
+        var parameters = new DialogParameters<Dialog>();
+        parameters.Add("Title", "Confirm Order");
+        parameters.Add("TitleIcon", Icons.Material.Filled.Coffee);
+        parameters.Add("ConfirmButtonText", "Confirm");
+        parameters.Add("ConfirmButtonColor", Color.Dark);
+
+        RenderFragment rf =@<MudText Typo="Typo.body1" Color="Color.Dark"> Are you sure  you want to order? You cannot cancel an order once it's placed.</MudText>;
+
+        parameters.Add(nameof(Dialog.ChildContent), rf);
+
+        var dialog = await DialogService.ShowAsync<Dialog>("Delete Coffee", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            try
+            {
+                TaskResponse reponse = await _orderService.OrderACoffee(order);
+                Snackbar.Add(reponse.Message, reponse.IsSuccess ? Severity.Success : Severity.Error);
+                await Task.Delay(2000);
+if (reponse.IsSuccess)
+                {
+                    _navigationManager.NavigateTo("/my-orders");
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add(ex.Message, MudBlazor.Severity.Error);
+            }
+        }
     }
 
 }

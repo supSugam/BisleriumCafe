@@ -12,5 +12,9 @@ namespace BisleriumCafe.Helpers
         {
             return date.ToString("MMM dd, yyyy");
         }
+        public static string ToFullFormattedDate(this DateTime date)
+        {
+            return date.ToString("MMM dd, yyyy hh:mm tt");
+        }
     }
 }
