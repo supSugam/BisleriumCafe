@@ -17,7 +17,7 @@
         Select Coffee Type
     </MudText>
         <MudText Color="Color.Default" Typo="Typo.h6" Class="fw-700">
-            ☕ 11% Discount on orders above Rs. 499 ! (Capped at Rs. 101)
+            ☕ 9% Discount on orders above Rs. 499 ! (Capped at Rs. 99)
         </MudText>
     </div>
     <MudGrid>
@@ -78,7 +78,10 @@
             </div>
             <div class="d-flex gap-1 align-items-center">
                 <MudText Typo="Typo.body1" Color="Color.Dark">
-                    Discount:
+                    @{
+                        string discountText = _authService.CurrentCustomer is not null && _authService.CurrentCustomer.IsRegularMember == true ? "(Membership 10%)" : "(9%)";
+                    }
+                    Discount @discountText:
                 </MudText>
                 <MudText Typo="Typo.body1" Color="Color.Dark" Class="ml-auto">
                     <strong>
@@ -139,19 +142,8 @@ Quantity--;
     private decimal GetTotalPrice()
     {
         decimal TotalPrice = 0;
-        if (SelectedCoffeeType is null) return 0;
-        // if (SelectedCoffeeAddin is not null)
-        // {
-        //     TotalPrice = SelectedCoffeeType.CoffeePrice * Quantity + SelectedCoffeeAddin.AddInPrice * Quantity;
-        // }
-        // else
-        // {
-        //     TotalPrice = SelectedCoffeeType.CoffeePrice * Quantity;
-        // }
         SelectedCoffeeAddins.ForEach(addin => TotalPrice += addin.AddInPrice * Quantity);
         TotalPrice += SelectedCoffeeType.CoffeePrice * Quantity;
-
-
 
         if(RedeemFreeCoffee && FreeCoffeeCount != 0)
         {
@@ -176,7 +168,14 @@ Quantity--;
     }
 
     private decimal TotalPrice => GetTotalPrice();
-    private decimal Discount => TotalPrice > 499 ? TotalPrice / 11 > 101 ? 101 : TotalPrice / 11 : 0;
+    private decimal Discount
+    {
+        get
+        {
+            return _authService.CurrentCustomer is not null && _authService.CurrentCustomer.IsRegularMember == true ? TotalPrice / 10 : TotalPrice > 499 ? TotalPrice / 9 > 99 ? 99 : TotalPrice / 9 : 0;
+        }
+    }
+
     private decimal ServiceCharge => TotalPrice / 10; // 10% service charge
     private decimal GrandTotal => TotalPrice - Discount + ServiceCharge;
     private bool RedeemFreeCoffee { get; set; } = false;

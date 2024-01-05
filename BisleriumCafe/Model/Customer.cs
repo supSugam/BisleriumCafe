@@ -11,20 +11,5 @@
         {
             Role = Enums.UserRole.Customer;
         }
-
-        public bool OrderACoffee()
-        {
-            TotalOrders++;
-            FreeCoffeeProgress++;
-            if (FreeCoffeeProgress == 10)
-            {
-                FreeCoffeeCount++;
-                FreeCoffeeProgress = 0;
-                return true;
-            }
-
-            return false;
-        }
-
     }
 }

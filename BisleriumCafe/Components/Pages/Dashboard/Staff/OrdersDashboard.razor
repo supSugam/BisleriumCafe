@@ -1,5 +1,6 @@
 ﻿@page "/dashboard/orders"
 @using BisleriumCafe.Helpers;
+@inject ISnackbar Snackbar;
 @inject BisleriumCafe.Services.OrderService _orderService;
 @inject BisleriumCafe.Services.AuthService _authService;
 
@@ -14,29 +15,37 @@
 }
 else
 {
-    <MudTable Items="@OrdersList" Dense="false" Hover="true" Bordered="true" Striped="false" Filter="new Func<Order,bool>(FilterFunc1)">
+    <MudTable RowsPerPage="5" Items="@OrdersList" Dense="false" Hover="true" Bordered="true" Striped="false" Filter="new Func<Order,bool>(FilterFunc1)">
         <ToolBarContent>
             <MudText Typo="Typo.h6" Color="Color.Dark">All Orders</MudText>
             <MudSpacer />
             <MudTextField @bind-Value="searchString1" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
         </ToolBarContent>
         <HeaderContent>
-            <MudTh Style="white-space: nowrap;"><MudTableSortLabel SortBy="new Func<Order, object>(x=>x.OrderDate)">Order Date</MudTableSortLabel></MudTh>
+            <MudTh Style="white-space: nowrap;"><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<Order, object>(x=>x.OrderDate)">Order Date</MudTableSortLabel></MudTh>
             <MudTh Style="white-space: nowrap;">
                 Ordered By
             </MudTh>
-            <MudTh Style="white-space: nowrap;"><MudTableSortLabel SortBy="new Func<Order, object>(x=>x.CoffeeType.CoffeeName)"></MudTableSortLabel>Coffee Name</MudTh>
+            <MudTh Style="white-space: nowrap;">Coffee Name</MudTh>
             <MudTh Style="white-space: nowrap;">Add-Ins</MudTh>
-            <MudTh Style="white-space: nowrap;"><MudTableSortLabel SortBy="new Func<Order, object>(x=>x.Total)">Quantity</MudTableSortLabel></MudTh>
-            <MudTh Style="white-space: nowrap;"><MudTableSortLabel SortBy="new Func<Order, object>(x=>x.RedeemedFreeCoffeeCount)">Redeemed</MudTableSortLabel></MudTh>
+            <MudTh Style="white-space: nowrap;">
+                <MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<Order, object>(x=>x.Total)">Quantity</MudTableSortLabel>
+            </MudTh>
+            <MudTh Style="white-space: nowrap;">
+                <MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<Order, object>(x=>x.RedeemedFreeCoffeeCount)">Redeemed</MudTableSortLabel>
+            </MudTh>
 
-            <MudTh Style="white-space: nowrap;"><MudTableSortLabel SortBy="new Func<Order, object>(x=>x.ServiceCharge)">Service Charge</MudTableSortLabel></MudTh>
+            <MudTh Style="white-space: nowrap;">
+                Service Charge
+            </MudTh>
 
-            <MudTh Style="white-space: nowrap;"><MudTableSortLabel SortBy="new Func<Order, object>(x=>x.Discount)">Discount</MudTableSortLabel></MudTh>
+            <MudTh Style="white-space: nowrap;">
+                <MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<Order, object>(x=>x.Discount)">Discount</MudTableSortLabel>
+            </MudTh>
 
-            <MudTh Style="white-space: nowrap;"><MudTableSortLabel SortBy="new Func<Order, object>(x=>x.Total)">Total</MudTableSortLabel></MudTh>
+            <MudTh Style="white-space: nowrap;"><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<Order, object>(x=>x.Total)">Total</MudTableSortLabel></MudTh>
 
-            <MudTh Style="white-space: nowrap;"><MudTableSortLabel SortBy="new Func<Order, object>(x=>x.GrandTotal)">Grand Total</MudTableSortLabel></MudTh>
+            <MudTh Style="white-space: nowrap;"><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<Order, object>(x=>x.GrandTotal)">Grand Total</MudTableSortLabel></MudTh>
 
             <MudTh Style="white-space: nowrap;">
                 Status
@@ -45,7 +54,7 @@ else
         </HeaderContent>
         <RowTemplate>
             <MudTd Class="text-center" DataLabel="Ordered At">@context.OrderDate.ToFullFormattedDate()</MudTd>
-<MudTd DataLabel="Ordered By">@context.CustomerName - @context.CustomerUserName</MudTd>
+                <MudTd DataLabel="Ordered By">@context.CustomerUserName</MudTd>
                 <MudTd DataLabel="Name">@context.CoffeeType.CoffeeName</MudTd>
                 <MudTd DataLabel="Add-Ins">
                     <div class="d-flex flex-column p-2 gap-1">
@@ -62,31 +71,37 @@ else
             </MudTd>
             <MudTd DataLabel="Quantity">@context.Quantity</MudTd>
                 <MudTd DataLabel="Redeemed Coffees">@context.RedeemedFreeCoffeeCount</MudTd>
-                <MudTd DataLabel="Service Charge">@context.ServiceCharge</MudTd>
-                <MudTd DataLabel="Discount">@context.Discount</MudTd>
-                <MudTd DataLabel="Total">@context.Total</MudTd>
-                <MudTd DataLabel="Grand Total">@context.GrandTotal</MudTd>
+                <MudTd DataLabel="Service Charge">@context.ServiceCharge.ToFormattedDecimal()</MudTd>
+                <MudTd DataLabel="Discount">@context.Discount.ToFormattedDecimal()</MudTd>
+                <MudTd DataLabel="Total">@context.Total.ToFormattedDecimal()</MudTd>
+                <MudTd DataLabel="Grand Total">@context.GrandTotal.ToFormattedDecimal()</MudTd>
                 <MudTd DataLabel="Status">
-                    @{
-                    string status = context.IsOrderCompleted ? "Completed" : "Pending";
-                    Color statusColor = context.IsOrderCompleted ? Color.Success : Color.Dark;
-                }
-                <MudChip Color="statusColor" Style="color: black;">
-                    <MudText Style="color:#fff">
-                        @status
-                    </MudText>
-
-                </MudChip>
-            </MudTd>
-        </RowTemplate>
-        <PagerContent>
-            <MudTablePager />
-        </PagerContent>
-    </MudTable>
+                    <MudSelect Value="context.OrderStatus" ValueChanged="(OrderStatus status)=>OnStatusChanged(context, status)" T="OrderStatus" Label="Change Status" Variant="Variant.Filled">
+                        <MudSelectItem Value="OrderStatus.Completed">
+                            <MudIcon Icon="@Icons.Material.Filled.TaskAlt" Class="mr-1"></MudIcon>
+                            Completed
+                        </MudSelectItem>
+                        <MudSelectItem Value="OrderStatus.Pending">
+                            <MudIcon Icon="@Icons.Material.Filled.QueryBuilder" Class="mr-1"></MudIcon>
+                            Pending
+                        </MudSelectItem>
+                    </MudSelect>
+                </MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+        </MudTable>
 
 }
 
 @code {
+    private async void OnStatusChanged(Order order, OrderStatus updatedStatus)
+    {
+        TaskResponse response = await _orderService.UpdateOrderStatus(order, updatedStatus);
+        Snackbar.Add(response.Message, response.IsSuccess ? Severity.Success : Severity.Error);
+    }
+
     private string searchString1 = "";
     private IEnumerable<Order> OrdersList = new List<Order>();
 
@@ -99,8 +114,8 @@ else
             return true;
         return false;
     }
-    // TODO: Sort Icons Color, functionality
-    // TODO: ALert before LogOut
+    // TODO: Sort Icons Color, functionality -> Done
+    // TODO: ALert before LogOut -> Done
     // TODO: Customer's details in profile (Orders, Redeemed Coffees, etc)
     // TODO: Automatic membership upgrade
     // TODO: progress bar while navigating to different pages

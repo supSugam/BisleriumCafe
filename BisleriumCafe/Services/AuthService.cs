@@ -2,10 +2,11 @@
 using BisleriumCafe.Model;
 using BisleriumCafe.Helpers;
 using BisleriumCafe.Enums;
-internal class AuthService(Repository<User> userRepository, Repository<Customer> customerRepository, SessionService sessionService)
+internal class AuthService(Repository<User> userRepository, Repository<Customer> customerRepository, Repository<Order> orderRepository, SessionService sessionService)
 {
     private readonly Repository<User> _userRepository = userRepository;
     private readonly Repository<Customer> _customerRepository = customerRepository;
+    private readonly Repository<Order> _orderRepository = orderRepository;
     private readonly SessionService _sessionService = sessionService;
 
     public User? CurrentUser { get; private set; }
@@ -113,9 +114,15 @@ internal class AuthService(Repository<User> userRepository, Repository<Customer>
             Session session = Session.Generate(CurrentUser.Id, stayLoggedIn,CurrentUser.Role);
             await _sessionService.SaveSession(session);
 
-           if(CurrentUser.Role == UserRole.Customer)
+            if (CurrentUser.Role == UserRole.Customer)
             {
-                CurrentCustomer = _customerRepository.Get(x => x.Id, CurrentUser.Id);
+                Customer? customer = _customerRepository.Get(x => x.Id, CurrentUser.Id);
+                if (customer is not null)
+                {
+                    bool IsRegularMember = IsRegularCustomer(customer);
+                    customer.IsRegularMember = IsRegularMember;
+                    CurrentCustomer = customer;
+                }
             }
             return true;
         }
@@ -161,7 +168,13 @@ internal class AuthService(Repository<User> userRepository, Repository<Customer>
 
         if (user.Role == UserRole.Customer)
         {
-            CurrentCustomer = _customerRepository.Get(x => x.Id, user.Id);
+            Customer? customer = _customerRepository.Get(x => x.Id, user.Id);
+            if(customer is not null)
+            {
+                bool IsRegularMember = IsRegularCustomer(customer);
+                customer.IsRegularMember = IsRegularMember;
+                CurrentCustomer = customer;
+            }
         }
 
         if (!session.IsValid())
@@ -281,6 +294,24 @@ internal class AuthService(Repository<User> userRepository, Repository<Customer>
             await _customerRepository.FlushAsync();
         }
         return response;
+    }
+
+    public bool IsRegularCustomer(Customer customer)
+    {
+        // Get all orders within the last 30 days for the given customer
+        var allOrdersDatePast30Days = _orderRepository.GetAll()
+            .Where(order => order.CustomerId == customer.Id && order.OrderDate >= DateTime.UtcNow.AddDays(-30))
+            .Select(order => order.OrderDate)
+            .ToList();
+
+        // Materialize the list of weekdays
+        var weekdaysList = Date.GetWeekdaysList(DateTime.UtcNow, 30);
+
+        // Use HashSet for faster lookup
+        var orderDatesHashSet = new HashSet<DateTime>(allOrdersDatePast30Days);
+
+        // Check if all weekdays have at least one order
+        return weekdaysList.All(date => orderDatesHashSet.Contains(date));
     }
 
 }

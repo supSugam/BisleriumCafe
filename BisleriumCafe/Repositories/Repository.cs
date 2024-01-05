@@ -45,12 +45,12 @@ internal class Repository<TSource> : RepositoryIO<TSource>, IRepository<TSource>
         return _sourceData;
     }
 
-    public virtual ICollection<TSource> GetAllSorted<TKey>(Func<TSource, TKey> keySelector, Enums.SortDirection direction)
+    public virtual ICollection<TSource> GetAllSorted<TKey>(Func<TSource, TKey> keySelector, Enums.SortDirectionEnum direction)
     {
         return direction switch
         {
-            Enums.SortDirection.Ascending => _sourceData.OrderBy(keySelector).ToList(),
-            Enums.SortDirection.Descending => _sourceData.OrderByDescending(keySelector).ToList(),
+            Enums.SortDirectionEnum.Ascending => _sourceData.OrderBy(keySelector).ToList(),
+            Enums.SortDirectionEnum.Descending => _sourceData.OrderByDescending(keySelector).ToList(),
             _ => throw new Exception("Invalid sort direction!"),
         };
     }

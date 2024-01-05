@@ -16,5 +16,28 @@ namespace BisleriumCafe.Helpers
         {
             return date.ToString("MMM dd, yyyy hh:mm tt");
         }
+
+        public static List<DateTime> GetWeekdaysList(DateTime endDate, int days)
+        {
+            List<DateTime> weekdaysList = new();
+
+            for (int i = 0; i <= days; i++)
+            {
+                DateTime currentDate = endDate.AddDays(-i);
+
+                // Exclude Saturdays and Sundays
+                if (currentDate.DayOfWeek != DayOfWeek.Saturday && currentDate.DayOfWeek != DayOfWeek.Sunday)
+                {
+                    weekdaysList.Add(currentDate);
+                }
+            }
+
+            return weekdaysList;
+        }
+
+        public static bool AreSameDay(DateTime date1, DateTime date2)
+        {
+            return date1.Year == date2.Year && date1.Month == date2.Month && date1.Day == date2.Day;
+        }
     }
 }

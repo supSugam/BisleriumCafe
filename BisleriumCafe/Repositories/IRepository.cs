@@ -19,7 +19,7 @@ internal interface IRepository<TSource> where TSource : IModel
 
     ICollection<TSource> GetAll();
 
-    ICollection<TSource> GetAllSorted<TKey>(Func<TSource, TKey> keySelector, Enums.SortDirection direction);
+    ICollection<TSource> GetAllSorted<TKey>(Func<TSource, TKey> keySelector, Enums.SortDirectionEnum direction);
 
     //
     // Summary:

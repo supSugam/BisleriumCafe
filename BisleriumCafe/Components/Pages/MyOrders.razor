@@ -1,6 +1,7 @@
 ﻿@page "/my-orders"
 @using BisleriumCafe.Helpers;
 @inject BisleriumCafe.Services.OrderService _orderService;
+@inject BisleriumCafe.Services.AuthService _authService;
 
 
 @if(OrdersList.Count() == 0)
@@ -69,13 +70,11 @@ else
                 <MudTd DataLabel="Grand Total">@context.GrandTotal</MudTd>
                 <MudTd DataLabel="Status">
                     @{
-                    string status = context.IsOrderCompleted ? "Completed" : "Pending";
-                    Color statusColor = context.IsOrderCompleted ? Color.Success : Color.Dark;
+                    Color statusColor = context.OrderStatus == OrderStatus.Completed ? Color.Success : Color.Dark;
                 }
                 <MudChip Color="statusColor" Style="color: black;">
                     <MudText Style="color:#fff">
-                        @status
-
+                        @context.OrderStatus
                     </MudText>
 
                 </MudChip>

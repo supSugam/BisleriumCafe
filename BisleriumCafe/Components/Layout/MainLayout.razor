@@ -1,14 +1,16 @@
 ﻿@inherits LayoutComponentBase
 @using BisleriumCafe.Model;
+@using BisleriumCafe.Components.Reusables
 @inject ISnackbar Snackbar;
+@inject IDialogService DialogService;
 @inject Microsoft.AspNetCore.Components.NavigationManager _navigationManager;
 @inject BisleriumCafe.Services.SessionService _sessionService;
 @inject BisleriumCafe.Services.AuthService _authService;
 @inject BisleriumCafe.Repositories.Repository<User> _usersRepository;
 @inject BisleriumCafe.Repositories.Repository<Customer> _customersRepository;
 @inject BisleriumCafe.Repositories.Repository<CoffeeType> _coffeeRepository;
- @inject BisleriumCafe.Repositories.Repository<CoffeeAddIn> _addInsRepository;
- @inject BisleriumCafe.Repositories.Repository<Order> _orderRepository;
+@inject BisleriumCafe.Repositories.Repository<CoffeeAddIn> _addInsRepository;
+@inject BisleriumCafe.Repositories.Repository<Order> _orderRepository;
 
 <MudThemeProvider />
 <MudDialogProvider />
@@ -71,7 +73,7 @@
 
                 @if (_authService.CurrentUser is not null)
                 {
-@if (_authService.CurrentUser.Role == UserRole.Customer)
+                    @if (_authService.CurrentUser.Role == UserRole.Customer)
                     {
                         <MudNavLink Href="/order-now" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ShoppingCart" IconColor="Color.Dark" Class="d-flex align-items-center">
                             <MudText Typo="Typo.h6" Color="Color.Dark">Order Now</MudText>
@@ -133,7 +135,7 @@
         await _customersRepository.LoadAsync();
         await _coffeeRepository.LoadAsync();
         await _addInsRepository.LoadAsync();
-await _orderRepository.LoadAsync();
+        await _orderRepository.LoadAsync();
 
         try
         {
@@ -151,11 +153,32 @@ await _orderRepository.LoadAsync();
         StateHasChanged();
     }
 
-    void HandleLogOut()
+    async void HandleLogOut()
     {
-        _authService.LogOut();
-        _navigationManager.NavigateTo("/");
-        Snackbar.Add("Logged out successfully", MudBlazor.Severity.Success);
+        var parameters = new DialogParameters<Dialog>();
+        parameters.Add("Title", "Logout");
+        parameters.Add("TitleIcon", Icons.Material.Filled.DoorSliding);
+        parameters.Add("ConfirmButtonText", "Confirm");
+        parameters.Add("ConfirmButtonColor", Color.Dark);
 
+        RenderFragment rf =@<MudText Typo="Typo.body1" Color="Color.Dark"> Are you sure you want to log out?</MudText>;
+
+        parameters.Add(nameof(Dialog.ChildContent), rf);
+
+        var dialog = await DialogService.ShowAsync<Dialog>("Log Out", parameters);
+        var result = await dialog.Result;
+        if (!result.Canceled)
+        {
+            try
+            {
+                _authService.LogOut();
+                Snackbar.Add("Logged out successfully", MudBlazor.Severity.Success);
+                _navigationManager.NavigateTo("/");
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add(ex.Message, MudBlazor.Severity.Error);
+            }
+        }
     }
 }
