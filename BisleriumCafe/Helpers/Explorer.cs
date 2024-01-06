@@ -22,10 +22,8 @@ internal static class Explorer
     {
         return extension switch
         {
-            FileExtension.csv => new CsvFileProvider<TSource>(),
             FileExtension.json => new JsonFileProvider<TSource>(),
-            FileExtension.xlsx => new ExcelFileProvider<TSource>(),
-            _ => throw new Exception("Only CSV, JSON, and XLSX files are supported!"),
+            _ => throw new Exception("Only JSON supported!"),
         };
     }
 

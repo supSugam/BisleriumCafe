@@ -83,4 +83,9 @@ internal class OrderService(Repository<Customer> customerRepository, Repository<
         return response;
     }
 
+    public IEnumerable<Order> GetOrdersWithInTimeRange(DateTime start, DateTime end)
+    {
+        return _orderRepository.GetAll().Where(order => order.OrderDate >= start && order.OrderDate <= end);
+    }
+
 }

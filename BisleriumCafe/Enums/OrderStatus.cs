@@ -1,7 +1,7 @@
 ﻿
 namespace BisleriumCafe.Enums
 {
-    internal enum OrderStatus
+    public enum OrderStatus
     {
         Pending,
         Completed,

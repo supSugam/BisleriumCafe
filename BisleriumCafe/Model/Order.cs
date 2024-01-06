@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BisleriumCafe.Model
 {
-    internal class Order: IModel
+    public class Order: IModel
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         public Guid CustomerId { get; set; }

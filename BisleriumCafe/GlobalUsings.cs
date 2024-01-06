@@ -1,6 +1,4 @@
 ﻿global using BisleriumCafe.Components;
-global using CsvHelper;
-global using Ganss.Excel;
 global using Microsoft.AspNetCore.Components;
 global using Microsoft.AspNetCore.Components.Forms;
 global using MudBlazor;

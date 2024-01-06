@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BisleriumCafe.Enums
 {
-    internal enum DatePeriod
+    public enum DatePeriod
     {
         Daily,
         Monthly,

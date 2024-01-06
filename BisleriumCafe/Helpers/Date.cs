@@ -59,9 +59,53 @@ namespace BisleriumCafe.Helpers
             return months;
         }
 
-        public static bool IsPastOrCurrentMonth(DateTime date)
+
+        public static bool IsFutureMonth(DateTime? date)
         {
-            return date.Year <= DateTime.Now.Year && date.Month <= DateTime.Now.Month;
+            return date is not null && date.Value.Year >= DateTime.Now.Year && date.Value.Month > DateTime.Now.Month;
+        }
+
+        public static bool IsFirstDateAfterSecondDate(DateTime? firstDate, DateTime secondDate)
+        {
+            if(firstDate == null)
+            {
+                return false;
+            }
+            return firstDate.Value.Year > secondDate.Year || firstDate.Value.Month > secondDate.Month || firstDate.Value.Day > secondDate.Day;
+        }
+
+        public static DateTime GetStartOfDate(DateSpan dateSpan, DateTime date)
+        {
+            switch (dateSpan)
+            {
+                case DateSpan.Day:
+                    return date.Date;
+                case DateSpan.Week:
+                    return date.Date.AddDays(-(int)date.DayOfWeek);
+                case DateSpan.Month:
+                    return new DateTime(date.Year, date.Month, 1);
+                case DateSpan.Year:
+                    return new DateTime(date.Year, 1, 1);
+                default:
+                    return date.Date;
+            }
+        }
+
+        public static DateTime GetEndOfDate(DateSpan dateSpan, DateTime date)
+        {
+            switch (dateSpan)
+            {
+                case DateSpan.Day:
+                    return date.Date.AddDays(1).AddTicks(-1);
+                case DateSpan.Week:
+                    return date.Date.AddDays(7 - (int)date.DayOfWeek).AddTicks(-1);
+                case DateSpan.Month:
+                    return new DateTime(date.Year, date.Month, DateTime.DaysInMonth(date.Year, date.Month)).AddTicks(-1);
+                case DateSpan.Year:
+                    return new DateTime(date.Year, 12, 31).AddTicks(-1);
+                default:
+                    return date.Date.AddDays(1).AddTicks(-1);
+            }
         }
     }
 }

@@ -1,0 +1,48 @@
+﻿@using BisleriumCafe.Enums;
+@using BisleriumCafe.Helpers
+
+<MudSimpleTable Style="overflow-x: auto;">
+    <thead>
+        <tr>
+            @foreach (var h in headings)
+            {
+                <th>@h</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (Order orderData in OrderData)
+        {
+            <tr>
+<td>@Index
+            </td>
+                <td>@Date.GetFormattedDate(orderData.OrderDate)</td>
+                <td>@orderData.Quantity</td>
+                <td>Rs. @orderData.Discount.ToFormattedDecimal()</td>
+                <td>Rs. @orderData.ServiceCharge</td>
+                <td>Rs. @orderData.Total.ToFormattedDecimal()</td>
+                <td>Rs. @orderData.GrandTotal.ToFormattedDecimal()</td>
+            </tr>
+Index++;
+        }
+    </tbody>
+</MudSimpleTable>
+
+
+@code {
+
+    int Index = 1;
+
+    private string[] headings = new string[] { "SN", "Order Date", "Quantity", "Discount", "SC", "Total","Grand Total" };
+
+    [Parameter]
+    public DatePeriod DatePeriod { get; set; } = DatePeriod.Monthly;
+
+    [Parameter]
+    public IEnumerable<Order> OrderData { get; set; }
+
+[Parameter]
+public DateTime? SelectedDate { get; set; }
+
+
+}

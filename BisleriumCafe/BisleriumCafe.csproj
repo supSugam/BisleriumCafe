@@ -71,8 +71,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="CsvHelper" Version="30.0.1" />
-        <PackageReference Include="ExcelMapper" Version="5.2.564" />
+        <PackageReference Include="itext7.pdfhtml" Version="5.0.2" />
         <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
         <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" />

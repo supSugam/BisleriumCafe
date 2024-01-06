@@ -1,73 +1,143 @@
 @page "/dashboard/overview"
 @using BisleriumCafe.Helpers;
+@using BisleriumCafe.Enums;
+@using BisleriumCafe.Components.Report;
+@using BisleriumCafe.Components.User;
+@using System.Linq;
 @inject BisleriumCafe.Services.OrderService _orderService;
 @inject BisleriumCafe.Services.AuthService _authService;
 @inject ISnackbar Snackbar;
 <div class="d-flex justify-content-center gap-3 flex-column">
     <MudText Typo="Typo.h4" Color="Color.Dark">
         Generate Sales Report
-</MudText>
-<div class="d-flex gap-3 shadow background-light w-100 p-4 justify-content-center flex-column">
+    </MudText>
+    <div class="d-flex gap-3 shadow background-light w-100 p-4 justify-content-center flex-column">
 
-    <MudSelect Value="_selectedDatePeriod" ValueChanged="(DatePeriod datePeriod)=>UpdateSelectedDatePeriod(datePeriod)" T="DatePeriod" Label="Select Date Period" Variant="Variant.Filled">
-        <MudSelectItem Value="DatePeriod.Daily">
-            <MudIcon Icon="@Icons.Material.Filled.TaskAlt" Class="mr-1"></MudIcon>
-            Daily
-        </MudSelectItem>
-        <MudSelectItem Value="DatePeriod.Monthly">
-            <MudIcon Icon="@Icons.Material.Filled.QueryBuilder" Class="mr-1"></MudIcon>
-            Monthly
-        </MudSelectItem>
-    </MudSelect>
+        <MudSelect Value="_selectedDatePeriod" ValueChanged="(DatePeriod datePeriod)=>UpdateSelectedDatePeriod(datePeriod)" T="DatePeriod" Label="Select Date Period" Variant="Variant.Filled">
+            <MudSelectItem Value="DatePeriod.Daily">
+                <MudIcon Icon="@Icons.Material.Filled.TaskAlt" Class="mr-1"></MudIcon>
+                Daily
+            </MudSelectItem>
+            <MudSelectItem Value="DatePeriod.Monthly">
+                <MudIcon Icon="@Icons.Material.Filled.QueryBuilder" Class="mr-1"></MudIcon>
+                Monthly
+            </MudSelectItem>
+        </MudSelect>
+        @{
+            bool SelectAllEnabled = SelectedYear is not null;
+        }
+        @if (_selectedDatePeriod == DatePeriod.Monthly)
+        {
+            <MudDatePicker Required="true"
+                           Label="Select an Year"
+                           Date="@SelectedYear"
+                           DateChanged="UpdateSelectedYear"
+                           OpenTo="OpenTo.Year"
+                           FixMonth="@DateTime.Today.Month"
+                           FixDay="@DateTime.Today.Day"
+                           DateFormat="yyyy"
+                           MinDate="@Date.GetStartOfDate(DateSpan.Year, DateTime.Today)"
+                           Color="Color.Dark" />
 
-    @if (_selectedDatePeriod == DatePeriod.Monthly)
-    {
-                        <MudDatePicker Required="true"
-                       Label="Select an Year"
-                       Date="@SelectedYear"
-                       DateChanged="UpdateSelectedYear"
-                       OpenTo="OpenTo.Year"
-                       FixMonth="@DateTime.Today.Month"
-                       FixDay="@DateTime.Today.Day"
-                       DateFormat="yyyy"
-                       MaxDate="@DateTime.Today"
-MinDate="@DateTime.Today.AddYears(-2)"
-Color="Color.Dark"
-                       />
+            <MudSelect MultiSelectionTextFunc="@(new Func<List<string>, string>(GetMultiSelectionText))"
+                       MultiSelection="true"
+                       @bind-Value="SelectedValue"
+                       @bind-SelectedValues="SelectedMonths"
+                       T="string"
+                       Label="Select Months"
+                       SelectAll="@SelectAllEnabled"
+                       SelectAllText="Select all months"
+                       AnchorOrigin="Origin.BottomCenter">
 
-        <MudSelect MultiSelectionTextFunc="@(new Func<List<string>, string>(GetMultiSelectionText))"
-                   MultiSelection="true"
-                   @bind-Value="SelectedValue"
-                   @bind-SelectedValues="SelectedMonths"
-                   T="string"
-                   Label="Select Months"
-                   SelectAll="true"
-                   SelectAllText="Select all months"
-                   AnchorOrigin="Origin.BottomCenter">
-
-                   @if(SelectedYear is null){
-                       <MudSelectItem Disabled="true" T="string">
-                           Select an year first
+                @if (SelectedYear is null)
+                {
+                    <MudSelectItem Disabled="true" T="string">
+                        Select an year first
                     </MudSelectItem>
                 }
                 else
                 {
-                                    @foreach (MonthWithIndex month in AllMonthsWithIndex)
-                {
-                    <MudSelectItem Disabled="!Date.IsPastOrCurrentMonth(new DateTime(SelectedYear.Value.Year, month.Index, 1))"
-                                   T="string"
-                                   Value="@month.Index.ToString()">
-                        @month.Name
-                    </MudSelectItem>
-                }                    
-                }               
-}
+                    @foreach (MonthWithIndex month in AllMonthsWithIndex)
+                    {
+                        <MudSelectItem Disabled="Date.IsFutureMonth(new DateTime(SelectedYear.Value.Year, month.Index, 1))"
+                                       T="string"
+                                       Value="@month.Index.ToString()">
+                            @month.Name
+                        </MudSelectItem>
+                    }
+                }
+            </MudSelect>
+        }
+        <MudButton Variant="Variant.Filled" Color="Color.Dark" Class="mt-2 ml-auto" OnClick="HandleReportGenerate">Generate Report</MudButton>
 
-        </MudSelect>
-    }
+        <MudProgressLinear Color="Color.Dark" Value="@Value" Class="my-3" />
+    </div>
+
+    <div class="d-flex p-2 flex-column gap-4 w-100">
+        <MudGrid>
+            @{
+                var allOrders = AllOrdersOfSelectedMonths.SelectMany(monthOrders => monthOrders);
+
+                // Group orders by CoffeeType and count the occurrences
+                var coffeeTypeCounts = allOrders
+                .GroupBy(order => order.CoffeeType)
+                .Select(group => new
+                {
+                    CoffeeType = group.Key,
+                    Count = group.Count()
+                });
+
+                // Find the most ordered CoffeeType
+                var Top5CoffeeTypes = coffeeTypeCounts
+                .OrderByDescending(item => item.Count).Take(5);
+
+
+                var allCoffeeAddIns = AllOrdersOfSelectedMonths
+                .SelectMany(monthOrders => monthOrders.SelectMany(order => order.CoffeeAddIns));
+
+                // Group CoffeeAddIns by their properties and count the occurrences
+                var coffeeAddInCounts = allCoffeeAddIns
+                .GroupBy(coffeeAddIn => new { coffeeAddIn.Id, coffeeAddIn.AddInName })
+                .Select(group => new
+                {
+                    CoffeeAddIn = group.Key,
+                    Count = group.Count()
+                });
+
+                // Find the most ordered CoffeeAddIn
+                var Top5CoffeeAddins = coffeeAddInCounts
+                .OrderByDescending(item => item.Count).Take(5);
+            }
+            @if (Top5CoffeeTypes is not null)
+            {
+
+                @foreach(var coffeeType in Top5CoffeeTypes)
+                {
+                    <ContentCardWithIcon Content="@coffeeType.CoffeeType.CoffeeName" Title="Most Ordered Coffee" Icon="@Icons.Material.Filled.Coffee" />
+                }
+
+            }
+
+            @if(Top5CoffeeAddins is not null)
+            {
+@foreach(var coffeeAddIn in Top5CoffeeAddins)
+                {
+                    <ContentCardWithIcon Content="@coffeeAddIn.CoffeeAddIn.AddInName" Title="Most Ordered AddIn" Icon="@Icons.Material.Filled.AddCircle" />
+                }
+            }
+        </MudGrid>
+                    @foreach (IEnumerable<Order> orders in AllOrdersOfSelectedMonths)
+            {
+                <SalesReportTable DatePeriod="@_selectedDatePeriod" OrderData="@orders" SelectedDate="@SelectedYear" />;
+            }
     </div>
 </div>
-@code{
+@code {
+    // Table Data
+    List<IEnumerable<Order>> AllOrdersOfSelectedMonths = new();
+    private string HtmlContent = "";
+
+    //
     private DateTime? SelectedYear { get; set; }
     private DatePeriod _selectedDatePeriod;
     private void UpdateSelectedDatePeriod(DatePeriod datePeriod)
@@ -76,8 +146,15 @@ Color="Color.Dark"
     }
     private void UpdateSelectedYear(DateTime? dateTime)
     {
-            SelectedYear = dateTime;
-            Snackbar.Add($"Selected Year: {SelectedYear.Value.Year}", Severity.Success);
+        if (dateTime is not null)
+        {
+            if (Date.IsFirstDateAfterSecondDate(dateTime, DateTime.Today))
+            {
+                Snackbar.Add("No Reports from the future!", Severity.Error);
+                return;
+            }
+        }
+        SelectedYear = dateTime;
     }
 
     private string SelectedValue { get; set; } = "Nothing selected";
@@ -91,24 +168,69 @@ Color="Color.Dark"
             .Select(month => month.Name));
     }
 
-
     //
-    private string searchString1 = "";
-    private IEnumerable<Order> OrdersList = new List<Order>();
 
-    private bool FilterFunc1(Order order) => FilterFunc(order, searchString1);
-    private bool FilterFunc(Order order, string searchString)
-    {
-        if (string.IsNullOrWhiteSpace(searchString))
-            return true;
-        if (order.CoffeeType.CoffeeName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-            return true;
-        return false;
 
-    }
-    protected override async Task OnInitializedAsync()
+    // Progress
+    private int Value { get; set; } = 0;
+    bool _disposed;
+    public void Dispose() => _disposed = true;
+    public async void SimulateProgress()
     {
-        await Task.Delay(0);
-        OrdersList = _orderService.GetAllOrders();
+        Value = 0;
+        do
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            Value += 4;
+            StateHasChanged();
+            await Task.Delay(500);
+
+        } while (Value < 100);
+
+        SimulateProgress();
     }
+
+
+    // Report Generation
+    private void HandleReportGenerate()
+    {
+
+        if (_selectedDatePeriod == DatePeriod.Daily)
+        {
+            // Generate Daily Report
+
+        }
+
+        if(_selectedDatePeriod == DatePeriod.Monthly)
+        {
+            // Generate Monthly Report
+            if (SelectedYear is null)
+            {
+                Snackbar.Add("Please select an year", Severity.Error);
+                return;
+            }
+
+            if (SelectedMonths.Count() == 0)
+            {
+                Snackbar.Add("Please select atleast one month", Severity.Error);
+                return;
+            }
+
+            // Generate Report
+            foreach (string month in SelectedMonths)
+            {
+                DateTime StartDate = new(SelectedYear.Value.Year, int.Parse(month), 1);
+                DateTime EndDate = Date.GetEndOfDate(DateSpan.Month, StartDate);
+                IEnumerable<Order> OrdersOfSelectedMonth = _orderService.GetOrdersWithInTimeRange(StartDate, EndDate);
+AllOrdersOfSelectedMonths.Add(OrdersOfSelectedMonth);
+
+            }
+
+        }
+}
+
 }
