@@ -295,6 +295,18 @@ internal class AuthService(Repository<User> userRepository, Repository<Customer>
         }
         return response;
     }
+    //public bool IsRegularCustomer(Customer customer)
+    //{
+    //    IEnumerable<DateTime> AllOrdersDatePast30Days = GetAllOrders().Where(order => order.CustomerId == customer.Id && order.OrderDate >= DateTime.Now.AddDays(-30)).Select(order=>order.OrderDate);
+
+    //    List<DateTime> Dates = Date.GetWeekdaysList(DateTime.Now, 30);
+    //    if(AllOrdersDatePast30Days.Count()< Dates.Count)
+    //    {
+    //        return false;
+    //    }
+    //    bool MeetsCondition = Dates.All(date1 => AllOrdersDatePast30Days.Where(date2 => Date.AreSameDay(date1, date2)).Count()>0);
+    //    return MeetsCondition;
+    //}
 
     public bool IsRegularCustomer(Customer customer)
     {

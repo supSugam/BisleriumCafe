@@ -79,7 +79,7 @@
             <div class="d-flex gap-1 align-items-center">
                 <MudText Typo="Typo.body1" Color="Color.Dark">
                     @{
-                        string discountText = _authService.CurrentCustomer is not null && _authService.CurrentCustomer.IsRegularMember == true ? "(Membership 10%)" : "(9%)";
+                        string discountText = _authService.CurrentCustomer is not null && _authService.CurrentCustomer.IsRegularMember == true ? "(Membership 10%)" : TotalPrice > 499 ? "(9% Discount)" : "(No Discount)";
                     }
                     Discount @discountText:
                 </MudText>

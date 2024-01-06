@@ -37,6 +37,8 @@ internal class OrderService(Repository<Customer> customerRepository, Repository<
                 CurrentCustomer.FreeCoffeeProgress = 0;
             }
         }
+        CurrentCustomer.TotalOrders += 1;
+
         bool UpdatedRepo =  _customerRepository.Update(CurrentCustomer);
         await _customerRepository.FlushAsync();
         response.IsSuccess = UpdatedRepo;
@@ -79,36 +81,6 @@ internal class OrderService(Repository<Customer> customerRepository, Repository<
 
         }
         return response;
-    }
-
-    //public bool IsRegularCustomer(Customer customer)
-    //{
-    //    IEnumerable<DateTime> AllOrdersDatePast30Days = GetAllOrders().Where(order => order.CustomerId == customer.Id && order.OrderDate >= DateTime.Now.AddDays(-30)).Select(order=>order.OrderDate);
-
-    //    List<DateTime> Dates = Date.GetWeekdaysList(DateTime.Now, 30);
-    //    if(AllOrdersDatePast30Days.Count()< Dates.Count)
-    //    {
-    //        return false;
-    //    }
-    //    bool MeetsCondition = Dates.All(date1 => AllOrdersDatePast30Days.Where(date2 => Date.AreSameDay(date1, date2)).Count()>0);
-    //    return MeetsCondition;
-    //}
-    public bool IsRegularCustomer(Customer customer)
-    {
-        // Get all orders within the last 30 days for the given customer
-        var allOrdersDatePast30Days = GetAllOrders()
-            .Where(order => order.CustomerId == customer.Id && order.OrderDate >= DateTime.UtcNow.AddDays(-30))
-            .Select(order => order.OrderDate)
-            .ToList();
-
-        // Materialize the list of weekdays
-        var weekdaysList = Date.GetWeekdaysList(DateTime.UtcNow, 30);
-
-        // Use HashSet for faster lookup
-        var orderDatesHashSet = new HashSet<DateTime>(allOrdersDatePast30Days);
-
-        // Check if all weekdays have at least one order
-        return weekdaysList.All(date => orderDatesHashSet.Contains(date));
     }
 
 }

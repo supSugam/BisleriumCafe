@@ -1,3 +1,6 @@
+@using BisleriumCafe.Helpers;
+@inject ISnackbar Snackbar;
+@inject BisleriumCafe.Services.AuthService _authService;
 <EditForm OnValidSubmit="OnFormSubmit"
     Model="@EditCoffeeFormModel">
     <DataAnnotationsValidator />
@@ -12,6 +15,8 @@
                                   @bind-Value="EditCoffeeFormModel.CoffeeDescription" For="@(() => EditCoffeeFormModel.CoffeeDescription)" />
 
                     <MudNumericField @bind-Value="EditCoffeeFormModel.CoffeePrice" Label="Coffee Price" Min="0" Max="1000" Step="10" HideSpinButtons="true" Required="true" />
+                    <MudTextField InputType="InputType.Password" Label="Enter Password" HelperText="Enter admin password for verification."
+                                  @bind-Value="EditCoffeeFormModel.Password" For="@(() => EditCoffeeFormModel.Password)" />
                 </MudCardContent>
                 <MudCardActions>
                     <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Dark" Class="ml-auto">
@@ -27,11 +32,22 @@
     [Parameter] public CoffeeType CoffeeType { get; set; }
     [Parameter] public Func<CoffeeType, Task> OnConfirmEditClick { get; set; }
     CoffeeForm EditCoffeeFormModel = new CoffeeForm();
+    private User? CurrentUser => _authService.CurrentUser;
 
     private void OnFormSubmit(EditContext context)
     {
         StateHasChanged();
+        if (CurrentUser is null || CurrentUser.Role != UserRole.Admin)
+        {
+            Snackbar.Add("You are not authorized to perform this action.", Severity.Error);
+            return;
 
+        }
+        if (!Hasher.VerifyHash(EditCoffeeFormModel.Password, CurrentUser.PasswordHash))
+        {
+            Snackbar.Add("Incorrect password.", Severity.Error);
+            return;
+        }
         CoffeeType coffeeType = new CoffeeType
         (
             EditCoffeeFormModel.CoffeeName,EditCoffeeFormModel.CoffeeDescription,EditCoffeeFormModel.CoffeePrice
@@ -61,5 +77,7 @@ coffeeType.UpdatedAt = DateTime.Now;
 
         [Range(0, 1000, ErrorMessage = "Price must be between 0 and 1000.")]
         public int CoffeePrice { get; set; } = 0;
+        [Required]
+        public string Password { get; set; } = "";
     }
 }

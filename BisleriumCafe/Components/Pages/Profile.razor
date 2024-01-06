@@ -3,9 +3,31 @@
 @using System.ComponentModel.DataAnnotations
 @using BisleriumCafe.Helpers
 @using BisleriumCafe.Services
+@using BisleriumCafe.Components.User
 @inject ISnackbar Snackbar;
 @inject BisleriumCafe.Services.AuthService _authService;
 @inject Microsoft.AspNetCore.Components.NavigationManager _navigationManager;
+
+
+@if(_authService.CurrentUser is not null){
+    <MudText Typo="Typo.h5" Color="Color.Dark" Class="fw-600">
+        Hey, @_authService.CurrentUser.UserName !
+    </MudText>
+}
+
+@if (Customer is not null)
+{
+    <MudGrid>
+        <ContentCardWithIcon Content="@Customer.TotalOrders.ToString()" Title="Total Orders" Icon="@Icons.Material.Filled.ShoppingBasket"/>
+        @{
+            string membershipStatus = Customer.IsRegularMember ? "Premium" : "Basic";
+            string freeCoffeeProgress = $"{Customer.FreeCoffeeProgress.ToString()}/10";
+        }
+        <ContentCardWithIcon Content="@membershipStatus" Title="Membership Status" Icon="@Icons.Material.Filled.Loyalty" />
+        <ContentCardWithIcon Content="@Customer.FreeCoffeeCount.ToString()" Title="Free Coffee Count" Icon="@Icons.Material.Filled.MoneyOff" />
+        <ContentCardWithIcon Content="@freeCoffeeProgress" Title="Free Coffee Progress" Icon="@Icons.Material.Filled.Stairs" />
+    </MudGrid>
+}
 
 <EditForm Model="@EditPersonalDetailsModel" OnValidSubmit="OnDetailsSubmit">
     <DataAnnotationsValidator />
@@ -48,6 +70,7 @@
 </EditForm>
 
 @code {
+    private Customer? Customer => _authService.CurrentCustomer;
 
     class EditPersonalDetailsForm
     {

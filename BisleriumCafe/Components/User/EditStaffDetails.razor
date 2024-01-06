@@ -1,4 +1,6 @@
 ﻿@using BisleriumCafe.Helpers;
+@inject ISnackbar Snackbar;
+@inject BisleriumCafe.Services.AuthService _authService;
 
 <EditForm Model="@EditStaffFormModel" OnValidSubmit="OnFormSubmit">
     <DataAnnotationsValidator />
@@ -18,6 +20,9 @@
                                       @bind-Value="EditStaffFormModel.Password" For="@(() => EditStaffFormModel.Password)" InputType="InputType.Password" />
                     }
 
+                    <MudTextField InputType="InputType.Password" Label="Enter Password" HelperText="Enter admin password for verification."
+                                  @bind-Value="EditStaffFormModel.AdminPassword" For="@(() => EditStaffFormModel.AdminPassword)" />
+
                 </MudCardContent>
                 <MudCardActions>
                     <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Dark" Class="ml-auto">Update</MudButton>
@@ -32,10 +37,22 @@
     [Parameter] public Func<User, Task> OnConfirmEditClick { get; set; }
     private bool ChangePassword = false;
     EditStaffForm EditStaffFormModel = new();
+    private User? CurrentUser => _authService.CurrentUser;
 
     private void OnFormSubmit(EditContext context)
     {
         StateHasChanged();
+        if (CurrentUser is null || CurrentUser.Role != UserRole.Admin)
+        {
+            Snackbar.Add("You are not authorized to perform this action.", Severity.Error);
+            return;
+
+        }
+        if (!Hasher.VerifyHash(EditStaffFormModel.Password, CurrentUser.PasswordHash))
+        {
+            Snackbar.Add("Incorrect password.", Severity.Error);
+            return;
+        }
 
         User user = new User
         (
@@ -73,5 +90,8 @@
         public string Username { get; set; } = "";
 
         public string Password { get; set; } = "";
+
+        [Required]
+        public string AdminPassword { get; set; } = "";
     }
 }

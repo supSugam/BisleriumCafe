@@ -1,4 +1,7 @@
-﻿<EditForm OnValidSubmit="OnFormSubmit"
+﻿@using BisleriumCafe.Helpers;
+@inject ISnackbar Snackbar;
+@inject BisleriumCafe.Services.AuthService _authService;
+<EditForm OnValidSubmit="OnFormSubmit"
     Model="@EditAddInFormModel">
     <DataAnnotationsValidator />
     <MudGrid>
@@ -12,6 +15,9 @@
                                   @bind-Value="EditAddInFormModel.AddInDescription" For="@(() => EditAddInFormModel.AddInDescription)" />
 
                     <MudNumericField @bind-Value="EditAddInFormModel.AddInPrice" Label="Add-in Price" Min="0" Max="1000" Step="10" HideSpinButtons="true" Required="true" />
+
+                    <MudTextField InputType="InputType.Password" Label="Enter Password" HelperText="Enter admin password for verification."
+                                  @bind-Value="EditAddInFormModel.Password" For="@(() => EditAddInFormModel.Password)" />
                 </MudCardContent>
                 <MudCardActions>
                     <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Dark" Class="ml-auto">
@@ -27,10 +33,22 @@
     [Parameter] public CoffeeAddIn CoffeeAddIn { get; set; }
     [Parameter] public Func<CoffeeAddIn, Task> OnConfirmEditClick { get; set; }
     AddInsForm EditAddInFormModel = new AddInsForm();
+    private User? CurrentUser => _authService.CurrentUser;
 
     private void OnFormSubmit(EditContext context)
     {
         StateHasChanged();
+        if(CurrentUser is null || CurrentUser.Role != UserRole.Admin)
+        {
+            Snackbar.Add("You are not authorized to perform this action.", Severity.Error);
+return;
+            
+        }
+        if (!Hasher.VerifyHash(EditAddInFormModel.Password, CurrentUser.PasswordHash))
+        {
+            Snackbar.Add("Incorrect password.", Severity.Error);
+return;
+        }
 
         CoffeeAddIn coffeeAddIn = new CoffeeAddIn
         (
@@ -61,6 +79,9 @@
 
         [Range(0, 1000, ErrorMessage = "Price must be between 0 and 1000.")]
         public int AddInPrice { get; set; } = 0;
+
+        [Required]
+        public string Password { get; set; } = "";
     }
 }
 

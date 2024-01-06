@@ -9,7 +9,9 @@ html, body {
     color: var(--dark);
     font-family: 'Inter', sans-serif;
 }
-
+.fw-300 {
+    font-weight: 300;
+}
 .fw-400{
 font-weight: 400;
 }
@@ -45,7 +47,7 @@ font-weight: 800;
 }
 
 .background-dark {
-    background-color: var(--light);
+    background-color: var(--dark);
 }
 
 .color-light{

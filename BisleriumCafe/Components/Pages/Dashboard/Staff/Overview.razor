@@ -1,0 +1,65 @@
+@page "/dashboard/overview"
+@using BisleriumCafe.Helpers;
+
+@inject BisleriumCafe.Services.OrderService _orderService;
+@inject BisleriumCafe.Services.AuthService _authService;
+
+
+<div class="d-flex gap-3 shadow-lg">
+
+    <MudSelect Value="_selectedDatePeriod" T="DatePeriod" Label="Select Date Period" Variant="Variant.Filled">
+        <MudSelectItem Value="DatePeriod.Daily">
+            Daily
+        </MudSelectItem>
+        <MudSelectItem Value="DatePeriod.Monthly">
+            Monthly
+        </MudSelectItem>
+    </MudSelect>
+
+    @switch (_selectedDatePeriod)
+    {
+        case DatePeriod.Daily:
+            break;
+            case DatePeriod.Monthly:
+            <MudSelect T="List<(int,string)>" MultiSelection="true" SelectAll="false" SelectAllText="Select all months" @bind-Value="SelectedMonthsWithIndex" @bind-SelectedValues="SelectedMonthsWithIndex" MultiSelectionTextFunc="@(new Func<List<string>, string>(GetMultiSelectionText))" Label="Selected Months">
+                @foreach (var month in AllMonthsWithIndex)
+                {
+                    <MudSelectItem T="string" Value="@month">@feline</MudSelectItem>
+                }
+            </MudSelect>
+    }
+
+    <MudDatePicker MaxDate="DateTime.Now" Label="Pick Year and Month" @bind-Date="_yearMonth" OpenTo="OpenTo.Year" FixDay="1" DateFormat="yyyy/MM" />
+</div>
+@* ValueChanged="(OrderStatus status)=>OnStatusChanged(context, status)" *@
+@code{
+    private DateTime _yearMonth;
+    private DatePeriod _selectedDatePeriod;
+    private List<(int,string)> AllMonthsWithIndex = Date.GetListOfMonthsWithIndex();
+    private List<(int, string)> SelectedMonthsWithIndex = new List<(int, string)>();
+
+    private string GetMultiSelectionText(List<(int, string)> selectedMonths)
+    {
+        return selectedMonths.JoinToString(", ", x => x.Item2);
+    }
+
+    //
+    private string searchString1 = "";
+    private IEnumerable<Order> OrdersList = new List<Order>();
+
+    private bool FilterFunc1(Order order) => FilterFunc(order, searchString1);
+    private bool FilterFunc(Order order, string searchString)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (order.CoffeeType.CoffeeName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        return false;
+
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(0);
+        OrdersList = _orderService.GetAllOrders();
+    }
+}
