@@ -98,14 +98,22 @@ internal class AuthService(Repository<User> userRepository, Repository<Customer>
         return response;
     }
 
-    public async Task<bool> Login(string userName, string password, bool stayLoggedIn)
+    public async Task<TaskResponse> Login(string userName, string password, bool stayLoggedIn)
     {
+        TaskResponse response = new();
+        response.IsSuccess = false;
+        if (CurrentUser is not null)
+        {
+            response.Message = "Already logged in!";
+            return response;
+        }
         CurrentUser = _userRepository.Get(x => x.UserName, userName);
 
 
         if (CurrentUser is null)
         {
-            return false;
+          response.Message = "User not found!";
+            return response;
         }
 
 
@@ -113,6 +121,8 @@ internal class AuthService(Repository<User> userRepository, Repository<Customer>
         {
             Session session = Session.Generate(CurrentUser.Id, stayLoggedIn,CurrentUser.Role);
             await _sessionService.SaveSession(session);
+            response.IsSuccess = true;
+            response.Message = "Login successful!";
 
             if (CurrentUser.Role == UserRole.Customer)
             {
@@ -124,9 +134,8 @@ internal class AuthService(Repository<User> userRepository, Repository<Customer>
                     CurrentCustomer = customer;
                 }
             }
-            return true;
         }
-        return false;
+        return response;
     }
 
     public bool IsUserAdmin()

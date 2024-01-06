@@ -130,7 +130,6 @@
 
     private async void OnRegisterStaffSubmit(EditContext context)
     {
-        StateHasChanged();
         string username = RegisterStaffModel.Username;
         string password = RegisterStaffModel.Password;
         string fullName = RegisterStaffModel.FullName;
@@ -145,6 +144,11 @@
         {
             TaskResponse response = await _authService.Register(username, fullName, password, UserRole.Staff);
             Snackbar.Add(response.Message, response.IsSuccess ? MudBlazor.Severity.Success : MudBlazor.Severity.Error);
+            if(response.IsSuccess)
+            {
+                RegisterStaffModel = new();
+                StateHasChanged();
+            }
         }
         catch (Exception ex)
         {

@@ -1,47 +1,96 @@
 @page "/dashboard/overview"
 @using BisleriumCafe.Helpers;
-
 @inject BisleriumCafe.Services.OrderService _orderService;
 @inject BisleriumCafe.Services.AuthService _authService;
+@inject ISnackbar Snackbar;
+<div class="d-flex justify-content-center gap-3 flex-column">
+    <MudText Typo="Typo.h4" Color="Color.Dark">
+        Generate Sales Report
+</MudText>
+<div class="d-flex gap-3 shadow background-light w-100 p-4 justify-content-center flex-column">
 
-
-<div class="d-flex gap-3 shadow-lg">
-
-    <MudSelect Value="_selectedDatePeriod" T="DatePeriod" Label="Select Date Period" Variant="Variant.Filled">
+    <MudSelect Value="_selectedDatePeriod" ValueChanged="(DatePeriod datePeriod)=>UpdateSelectedDatePeriod(datePeriod)" T="DatePeriod" Label="Select Date Period" Variant="Variant.Filled">
         <MudSelectItem Value="DatePeriod.Daily">
+            <MudIcon Icon="@Icons.Material.Filled.TaskAlt" Class="mr-1"></MudIcon>
             Daily
         </MudSelectItem>
         <MudSelectItem Value="DatePeriod.Monthly">
+            <MudIcon Icon="@Icons.Material.Filled.QueryBuilder" Class="mr-1"></MudIcon>
             Monthly
         </MudSelectItem>
     </MudSelect>
 
-    @switch (_selectedDatePeriod)
+    @if (_selectedDatePeriod == DatePeriod.Monthly)
     {
-        case DatePeriod.Daily:
-            break;
-            case DatePeriod.Monthly:
-            <MudSelect T="List<(int,string)>" MultiSelection="true" SelectAll="false" SelectAllText="Select all months" @bind-Value="SelectedMonthsWithIndex" @bind-SelectedValues="SelectedMonthsWithIndex" MultiSelectionTextFunc="@(new Func<List<string>, string>(GetMultiSelectionText))" Label="Selected Months">
-                @foreach (var month in AllMonthsWithIndex)
-                {
-                    <MudSelectItem T="string" Value="@month">@feline</MudSelectItem>
+                        <MudDatePicker Required="true"
+                       Label="Select an Year"
+                       Date="@SelectedYear"
+                       DateChanged="UpdateSelectedYear"
+                       OpenTo="OpenTo.Year"
+                       FixMonth="@DateTime.Today.Month"
+                       FixDay="@DateTime.Today.Day"
+                       DateFormat="yyyy"
+                       MaxDate="@DateTime.Today"
+MinDate="@DateTime.Today.AddYears(-2)"
+Color="Color.Dark"
+                       />
+
+        <MudSelect MultiSelectionTextFunc="@(new Func<List<string>, string>(GetMultiSelectionText))"
+                   MultiSelection="true"
+                   @bind-Value="SelectedValue"
+                   @bind-SelectedValues="SelectedMonths"
+                   T="string"
+                   Label="Select Months"
+                   SelectAll="true"
+                   SelectAllText="Select all months"
+                   AnchorOrigin="Origin.BottomCenter">
+
+                   @if(SelectedYear is null){
+                       <MudSelectItem Disabled="true" T="string">
+                           Select an year first
+                    </MudSelectItem>
                 }
-            </MudSelect>
-    }
+                else
+                {
+                                    @foreach (MonthWithIndex month in AllMonthsWithIndex)
+                {
+                    <MudSelectItem Disabled="!Date.IsPastOrCurrentMonth(new DateTime(SelectedYear.Value.Year, month.Index, 1))"
+                                   T="string"
+                                   Value="@month.Index.ToString()">
+                        @month.Name
+                    </MudSelectItem>
+                }                    
+                }               
+}
 
-    <MudDatePicker MaxDate="DateTime.Now" Label="Pick Year and Month" @bind-Date="_yearMonth" OpenTo="OpenTo.Year" FixDay="1" DateFormat="yyyy/MM" />
+        </MudSelect>
+    }
+    </div>
 </div>
-@* ValueChanged="(OrderStatus status)=>OnStatusChanged(context, status)" *@
 @code{
-    private DateTime _yearMonth;
+    private DateTime? SelectedYear { get; set; }
     private DatePeriod _selectedDatePeriod;
-    private List<(int,string)> AllMonthsWithIndex = Date.GetListOfMonthsWithIndex();
-    private List<(int, string)> SelectedMonthsWithIndex = new List<(int, string)>();
-
-    private string GetMultiSelectionText(List<(int, string)> selectedMonths)
+    private void UpdateSelectedDatePeriod(DatePeriod datePeriod)
     {
-        return selectedMonths.JoinToString(", ", x => x.Item2);
+        _selectedDatePeriod = datePeriod;
     }
+    private void UpdateSelectedYear(DateTime? dateTime)
+    {
+            SelectedYear = dateTime;
+            Snackbar.Add($"Selected Year: {SelectedYear.Value.Year}", Severity.Success);
+    }
+
+    private string SelectedValue { get; set; } = "Nothing selected";
+    private IEnumerable<string> SelectedMonths { get; set; } = new HashSet<string>();
+    private List<MonthWithIndex> AllMonthsWithIndex = Date.GetListOfMonthsWithIndex();
+
+    private string GetMultiSelectionText(List<string> selectedMonths)
+    {
+        return string.Join(", ", AllMonthsWithIndex
+            .Where(month => selectedMonths.Contains(month.Index.ToString()))
+            .Select(month => month.Name));
+    }
+
 
     //
     private string searchString1 = "";

@@ -18,6 +18,8 @@
 
                         <MudTextField Label="Password" Class="mt-3"
                                       @bind-Value="model.Password" For="@(() => model.Password)" InputType="InputType.Password" />
+                        <MudSwitch Label="Stay Logged In" @bind-Value="@StayLoggedIn" Color="Color.Dark" UnCheckedColor="Color.Default" />
+
                     </MudCardContent>
                     <MudCardActions>
                         <MudLink Class="mr-auto" Href="/signup">Don't have an account? Sign up</MudLink>
@@ -28,7 +30,6 @@
             <MudItem xs="12">
                 <MudText Typo="Typo.body2" Align="Align.Center">
                     Login using your username and password.
-                    @formData
                 </MudText>
             </MudItem>
         </MudGrid>
@@ -37,7 +38,7 @@
 
 @code {
     LoginAccountForm model = new LoginAccountForm();
-    string formData = "";
+    private bool StayLoggedIn = false;
 
     public class LoginAccountForm
     {
@@ -57,23 +58,13 @@
         StateHasChanged();
         string username = model.Username;
         string password = model.Password;
-        // if (username == "" || password == "")
-        // {
-        //     Snackbar.Add("Please fill all the fields", MudBlazor.Severity.Error);
-        //     return;
-        // }
         try
         {
-            formData = username+ " " + password;
-            bool loggedIn = await _authService.Login(username, password, true);
-if (loggedIn)
+            TaskResponse reponse = await _authService.Login(username, password, StayLoggedIn);
+            Snackbar.Add(reponse.Message, reponse.IsSuccess ? Severity.Success : Severity.Error);
+if (reponse.IsSuccess)
             {
-                Snackbar.Add("Logged in successfully", MudBlazor.Severity.Success);
                 _navigationManager.NavigateTo("/");
-            }
-            else
-            {
-                Snackbar.Add("Invalid username or password", MudBlazor.Severity.Error);
             }
         }
         catch (Exception ex)

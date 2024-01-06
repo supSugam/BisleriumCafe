@@ -1,11 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
+using BisleriumCafe.Model;
 
 namespace BisleriumCafe.Helpers
 {
+    public class MonthWithIndex
+    {
+        public int Index { get; set; }
+        public string Name { get; set; }
+    }
     public static class Date
     {
         public static string GetFormattedDate(this DateTime date)
@@ -40,16 +42,26 @@ namespace BisleriumCafe.Helpers
             return date1.Year == date2.Year && date1.Month == date2.Month && date1.Day == date2.Day;
         }
 
-        public static List<(int,string)> GetListOfMonthsWithIndex()
+        public static List<MonthWithIndex> GetListOfMonthsWithIndex()
         {
-            List<(int, string)> months = new();
+            List<MonthWithIndex> months = [];
 
             for (int i = 1; i <= 12; i++)
             {
-                months.Add((i, new DateTime(2021, i, 1).ToString("MMMM")));
+
+                months.Add(new MonthWithIndex
+                {
+                    Index = i,
+                    Name = new DateTime(2021, i, 1).ToString("MMMM")
+                });
             }
 
             return months;
+        }
+
+        public static bool IsPastOrCurrentMonth(DateTime date)
+        {
+            return date.Year <= DateTime.Now.Year && date.Month <= DateTime.Now.Month;
         }
     }
 }
