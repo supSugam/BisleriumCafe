@@ -30,6 +30,18 @@
 
     <script src="_framework/blazor.webview.js" autostart="false"></script>
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>
+    <script>
+        async function GetHtmlContentOfAnElement(elementId) {
+            await setTimeout(() => { }, 1);
+            console.log(elementId);
+            var element = document.getElementById(elementId);
+            console.log(element);
+            var result = element.innerHTML;
+            console.log(result);
+            return result;
+        }
+
+    </script>
 </body>
 
 </html>

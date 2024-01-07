@@ -45,11 +45,6 @@
                 {
                     <MudMenuItem Link="dashboard/orders">Dashboard</MudMenuItem>
                 }
-
-                @if (_authService.CurrentUser.Role == UserRole.Staff && _authService.CurrentMember is not null)
-                {
-                    <MudMenuItem Link="my-orders">@_authService.CurrentMember.UserName Orders</MudMenuItem>
-                }
                 <MudMenuItem OnClick="@HandleLogOut">Logout</MudMenuItem>
             }
             else
@@ -82,6 +77,10 @@
                             <MudNavLink Href="/dashboard/orders">Orders</MudNavLink>
                             <MudNavLink Href="/dashboard/overview">Overview</MudNavLink>
                         </MudNavGroup>
+                        @if ( _authService.CurrentMember is not null)
+                        {
+                            <MudMenuItem Link="my-orders">@_authService.CurrentMember.UserName's Orders</MudMenuItem>
+                        }
                     }
                     @if (_authService.CurrentUser.Role == UserRole.Admin)
                     {

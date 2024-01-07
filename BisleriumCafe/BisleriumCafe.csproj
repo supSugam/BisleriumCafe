@@ -71,6 +71,8 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="itext" Version="8.0.2" />
+        <PackageReference Include="itext.bouncy-castle-adapter" Version="8.0.2" />
         <PackageReference Include="itext7.pdfhtml" Version="5.0.2" />
         <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
         <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />

@@ -1,24 +1,44 @@
-﻿using System.IO;
-using System.Threading.Tasks;
-using iText.Html2pdf;
-using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
+﻿using iText.Html2pdf;
+using BisleriumCafe.Helpers;
 
 namespace BisleriumCafe.Services
 {
-    public class PdfService(IJSRuntime jsRuntime)
+    public class PdfService()
     {
-        private readonly IJSRuntime _jsRuntime = jsRuntime;
 
-        public async Task GeneratePdfFromComponentAsync(ComponentBase component, string filePath)
+        public async Task<bool> GeneratePdf(string htmlContent, string fileName)
         {
-            var htmlContent = await _jsRuntime.InvokeAsync<string>("blazorSaveHtml.getHtml", component);
-
-            using (var stream = new FileStream(filePath, FileMode.Create))
+            try
             {
-                HtmlConverter.ConvertToPdf(htmlContent, stream);
+                // Get the full file path for the PDF
+                string pdfFilePath = Path.Combine(Explorer.GetDocumentsDirectoryPath(), fileName + ".pdf");
+
+                if(!File.Exists(pdfFilePath))
+                {
+                    File.Create(pdfFilePath);
+                }
+
+                // Initialize ConverterProperties
+
+                // Uncomment the following lines if you want to set additional properties
+                // For example, setting a base URI for relative paths in the HTML
+                // converterProperties.SetBaseUri("file:///C:/Your/Base/Path/");
+
+                using (FileStream pdfDest = File.Open(pdfFilePath, FileMode.Create))
+                {
+                    ConverterProperties converterProperties = new ConverterProperties();
+                    HtmlConverter.ConvertToPdf(htmlContent, pdfDest, converterProperties);
+                }
+
+                return true; // PDF generation successful
+            }
+            catch (Exception ex)
+            {
+                // Handle exceptions appropriately (e.g., log the error)
+                return false;
             }
         }
+
     }
 }
 
