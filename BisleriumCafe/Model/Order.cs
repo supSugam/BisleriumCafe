@@ -9,9 +9,9 @@ namespace BisleriumCafe.Model
     public class Order: IModel
     {
         public Guid Id { get; set; } = Guid.NewGuid();
-        public Guid CustomerId { get; set; }
-        public string CustomerName { get; set; }
-        public string CustomerUserName { get; set; }
+        public Guid? CustomerId { get; set; }
+        public string? CustomerName { get; set; } = "Customer";
+        public string CustomerUserName { get; set; } = "Normal-Customer";
         public CoffeeType CoffeeType { get; set; }
 
         public List<CoffeeAddIn> CoffeeAddIns { get; set; }

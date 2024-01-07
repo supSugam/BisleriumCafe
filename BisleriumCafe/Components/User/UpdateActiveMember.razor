@@ -1,0 +1,48 @@
+@using System.ComponentModel.DataAnnotations
+@inject ISnackbar Snackbar;
+@inject BisleriumCafe.Services.AuthService _authService;
+
+<EditForm Model="@model" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator />
+    <MudGrid>
+        <MudItem xs="12" sm="12">
+            <MudCard>
+                <MudCardContent>
+                    <MudTextField Label="Username" HelperText="Atleast 3 characters."
+                                  @bind-Value="model.Username" For="@(() => model.Username)" />
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Dark" Class="ml-auto">Set Member</MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</EditForm>
+
+
+@code {
+    [Parameter]
+    public Func<TaskResponse, Task> OnConfirmEditClick { get; set; }
+    UpdateActiveMemberModel model = new();
+
+    public class UpdateActiveMemberModel
+    {
+
+        [Required]
+        [StringLength(32, ErrorMessage = "Username cannot not be empty. ", MinimumLength = 1)]
+        public string Username { get; set; } = "";
+    }
+
+    private async void OnValidSubmit(EditContext context)
+    {
+        string username = model.Username;
+        TaskResponse response = await _authService.UpdateActiveMember(username);
+        Snackbar.Add(response.Message, response.IsSuccess ? MudBlazor.Severity.Success : MudBlazor.Severity.Error);
+        if (response.IsSuccess)
+        {
+            await OnConfirmEditClick(response);
+        }
+        StateHasChanged();
+    }
+
+}

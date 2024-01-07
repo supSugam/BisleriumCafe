@@ -7,9 +7,8 @@ public class User : IModel, ICloneable
 {
     public Guid Id { get; set; } = Guid.NewGuid();
     public string UserName { get; set; }
-    //public string Email { get; set; }
     public string FullName { get; set; }
-    public string PasswordHash { get; set; }
+    public string? PasswordHash { get; set; }
     public UserRole Role { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.Now;
     public Guid? CreatedBy { get; set; }

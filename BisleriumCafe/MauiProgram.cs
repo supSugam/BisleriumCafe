@@ -37,6 +37,7 @@ namespace BisleriumCafe
             builder.Services.AddRepository();
             builder.Services.AddCoffeeService();
             builder.Services.AddOrderService();
+            builder.Services.AddScoped<PdfService>();
 
             //builder.Services.AddSeeder();
 

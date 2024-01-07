@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace BisleriumCafe.Model
 {
-    internal class TaskResponse:ITaskResponse
+    public class TaskResponse:ITaskResponse
     {
         public bool IsSuccess { get; set; }
         public string Message { get; set; }

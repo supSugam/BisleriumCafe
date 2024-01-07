@@ -1,7 +1,4 @@
-@page "/signup"
-
-@using System.ComponentModel.DataAnnotations
-@using BisleriumCafe.Helpers
+﻿@using System.ComponentModel.DataAnnotations
 @using BisleriumCafe.Services
 @inject ISnackbar Snackbar;
 @inject Microsoft.AspNetCore.Components.NavigationManager _navigationManager;
@@ -17,11 +14,6 @@
                                   @bind-Value="model.FullName" For="@(() => model.FullName)" />
                     <MudTextField Label="Username" HelperText="Atleast 3 characters."
                                   @bind-Value="model.Username" For="@(() => model.Username)" />
-
-                    <MudTextField Label="Password" HelperText="Choose a strong password" Class="mt-3"
-                                  @bind-Value="model.Password" For="@(() => model.Password)" InputType="InputType.Password" />
-                    <MudTextField Label="Password" HelperText="Repeat the password" Class="mt-3"
-                                  @bind-Value="model.RePassword" For="@(() => model.RePassword)" InputType="InputType.Password" />
                 </MudCardContent>
                 <MudCardActions>
                     <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Dark" Class="ml-auto">Register</MudButton>
@@ -33,8 +25,9 @@
 
 
 @code {
+    [Parameter]
+    public Func<TaskResponse, Task> OnConfirmEditClick { get; set; }
     RegisterAccountForm model = new RegisterAccountForm();
-    bool success;
 
     public class RegisterAccountForm
     {
@@ -45,44 +38,26 @@
         [Required]
         [StringLength(32, ErrorMessage = "Username should be 3 to 32 characters long. ", MinimumLength = 3)]
         public string Username { get; set; } = "";
-
-        [Required]
-        [StringLength(32, ErrorMessage = "Password must be at least 8 characters long.", MinimumLength = 4)]
-        public string Password { get; set; } = "";
-
-        [Required]
-        [Compare(nameof(Password), ErrorMessage="Password does not match.")]
-        public string RePassword { get; set; } = "";
-
     }
 
     private async void OnValidSubmit(EditContext context)
     {
-        success = true;
         StateHasChanged();
 
         string username = model.Username;
-        string password = model.Password;
         string fullName = model.FullName;
-        string rePassword = model.RePassword;
 
-        if (username == "" || password == "" || fullName == "" || rePassword == "")
+        if (username == "" || fullName == "")
         {
             Snackbar.Add("Please fill all the fields", MudBlazor.Severity.Error);
-            success = false;
             return;
         }
-        try
-        {
-// TaskResponse response = await _authService.Register(username, fullName, password, UserRole.Admin);
-            // Snackbar.Add(response.Message, response.IsSuccess ? MudBlazor.Severity.Success : MudBlazor.Severity.Error);
-           
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add(ex.Message, MudBlazor.Severity.Error);
-            success = false;
-        }
+            TaskResponse response = await _authService.Register(UserRole.Member, username, fullName);
+            Snackbar.Add(response.Message, response.IsSuccess ? MudBlazor.Severity.Success : MudBlazor.Severity.Error);
+if (response.IsSuccess)
+            {
+                await OnConfirmEditClick(response);
+            }
     }
 
 }

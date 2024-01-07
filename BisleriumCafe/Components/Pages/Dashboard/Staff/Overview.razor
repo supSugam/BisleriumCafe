@@ -1,11 +1,14 @@
 @page "/dashboard/overview"
+@using iText.Html2pdf;
 @using BisleriumCafe.Helpers;
 @using BisleriumCafe.Enums;
 @using BisleriumCafe.Components.Report;
 @using BisleriumCafe.Components.User;
 @using System.Linq;
+@using Microsoft.AspNetCore.Components;
 @inject BisleriumCafe.Services.OrderService _orderService;
 @inject BisleriumCafe.Services.AuthService _authService;
+@inject BisleriumCafe.Services.PdfService _pdfService;
 @inject ISnackbar Snackbar;
 <div class="d-flex justify-content-center gap-3 flex-column">
     <MudText Typo="Typo.h4" Color="Color.Dark">
@@ -133,6 +136,14 @@
     </div>
 </div>
 @code {
+
+    //
+
+
+    private async Task GeneratePdf()
+    {
+        await _pdfService.GeneratePdfFromComponentAsync(this, Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "/test.pdf");
+    }
     // Table Data
     List<IEnumerable<Order>> AllOrdersOfSelectedMonths = new();
     private string HtmlContent = "";
@@ -196,7 +207,7 @@
 
 
     // Report Generation
-    private void HandleReportGenerate()
+    private async void HandleReportGenerate()
     {
 
         if (_selectedDatePeriod == DatePeriod.Daily)
@@ -226,11 +237,16 @@
                 DateTime StartDate = new(SelectedYear.Value.Year, int.Parse(month), 1);
                 DateTime EndDate = Date.GetEndOfDate(DateSpan.Month, StartDate);
                 IEnumerable<Order> OrdersOfSelectedMonth = _orderService.GetOrdersWithInTimeRange(StartDate, EndDate);
-AllOrdersOfSelectedMonths.Add(OrdersOfSelectedMonth);
-
+                AllOrdersOfSelectedMonths.Add(OrdersOfSelectedMonth);
             }
+
+            await GeneratePdf();
+
+
+        }
+
+            
 
         }
 }
 
-}

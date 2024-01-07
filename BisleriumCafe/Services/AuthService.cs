@@ -2,17 +2,49 @@
 using BisleriumCafe.Model;
 using BisleriumCafe.Helpers;
 using BisleriumCafe.Enums;
-internal class AuthService(Repository<User> userRepository, Repository<Customer> customerRepository, Repository<Order> orderRepository, SessionService sessionService)
+internal class AuthService(Repository<User> userRepository, Repository<Member> memberRepository, Repository<Order> orderRepository, SessionService sessionService)
 {
     private readonly Repository<User> _userRepository = userRepository;
-    private readonly Repository<Customer> _customerRepository = customerRepository;
+    private readonly Repository<Member> _memberRepository = memberRepository;
     private readonly Repository<Order> _orderRepository = orderRepository;
     private readonly SessionService _sessionService = sessionService;
 
     public User? CurrentUser { get; private set; }
-    public Customer? CurrentCustomer { get; private set; }
+    public Member? CurrentMember { get; private set; }
 
-    public async Task<TaskResponse> Register(string username, string fullname,string password, UserRole role)
+    // Member
+
+    public async Task<TaskResponse> UpdateActiveMember(string userName)
+    {
+        TaskResponse response = new();
+        response.IsSuccess = false;
+        if (CurrentUser is null)
+        {
+            response.Message = "You are not authorized to do this.";
+            return response;
+        }
+        Member? member = _memberRepository.Get(x => x.UserName, userName);
+        if (member is null)
+        {
+            response.Message = "Member not found, Register first!";
+            return response;
+        }
+        CurrentMember = member;
+        response.IsSuccess = true;
+        response.Message = $"Active member updated to {member.FullName}!";
+        return response;
+    }
+
+    public async Task<TaskResponse> RemoveCurrentMember()
+    {
+        CurrentMember = null;
+        TaskResponse response = new();
+        response.IsSuccess = true;
+        response.Message = "Switched back to customer mode!";
+        return response;
+    }
+
+    public async Task<TaskResponse> Register(UserRole role, string username, string fullname,string? password=null)
     {
         TaskResponse response = new();
         response.IsSuccess = false;
@@ -26,27 +58,33 @@ internal class AuthService(Repository<User> userRepository, Repository<Customer>
         {
             UserName = username,
             FullName = fullname,
-            PasswordHash = Hasher.HashSecret(password),
             Role = role,
         };
-        if(CurrentUser is not null && CurrentUser.Role == UserRole.Admin)
+
+        if(role != UserRole.Member && password is not null)
+        {
+            user.PasswordHash = Hasher.HashSecret(password);
+        }
+
+        if(CurrentUser is not null)
         {
             user.CreatedBy = CurrentUser.Id;
         }
         _userRepository.Add(user);
         await _userRepository.FlushAsync();
-        if(role == UserRole.Customer)
+
+
+        if(role == UserRole.Member)
         {
-            Customer customer = new()
+            Member member = new()
             {
                 Id=user.Id,
                 UserName = username,
                 FullName = fullname,
-                PasswordHash = Hasher.HashSecret(password),
                 Role = role,
             };
-            _customerRepository.Add(customer);
-            await _customerRepository.FlushAsync();
+            _memberRepository.Add(member);
+            await _memberRepository.FlushAsync();
         }   
         response.IsSuccess = true;
         response.Message = "User registered successfully!";
@@ -84,13 +122,13 @@ internal class AuthService(Repository<User> userRepository, Repository<Customer>
 
         _userRepository.Remove(user);
         await _userRepository.FlushAsync();
-        if(user.Role == UserRole.Customer)
+        if (user.Role == UserRole.Member)
         {
-            Customer? customer = _customerRepository.Get(x => x.Id, userId);
-            if (customer is not null)
+            Member? member = _memberRepository.Get(x => x.Id, userId);
+            if (member is not null)
             {
-                _customerRepository.Remove(customer);
-                await _customerRepository.FlushAsync();
+                _memberRepository.Remove(member);
+                await _memberRepository.FlushAsync();
             }
         }
         response.IsSuccess = true;
@@ -116,24 +154,24 @@ internal class AuthService(Repository<User> userRepository, Repository<Customer>
             return response;
         }
 
-
         if (Hasher.VerifyHash(password, CurrentUser.PasswordHash))
         {
             Session session = Session.Generate(CurrentUser.Id, stayLoggedIn,CurrentUser.Role);
             await _sessionService.SaveSession(session);
+
+            if (CurrentUser.Role == UserRole.Member)
+            {
+                response.IsSuccess = false;
+                response.Message = "You are not authorized to login!";
+                return response;
+            } 
             response.IsSuccess = true;
             response.Message = "Login successful!";
-
-            if (CurrentUser.Role == UserRole.Customer)
-            {
-                Customer? customer = _customerRepository.Get(x => x.Id, CurrentUser.Id);
-                if (customer is not null)
-                {
-                    bool IsRegularMember = IsRegularCustomer(customer);
-                    customer.IsRegularMember = IsRegularMember;
-                    CurrentCustomer = customer;
-                }
-            }
+        }
+        else
+        {
+            response.Message = "Incorrect password!";
+            return response;
         }
         return response;
     }
@@ -157,7 +195,7 @@ internal class AuthService(Repository<User> userRepository, Repository<Customer>
     {
         _sessionService.DeleteSession();
         CurrentUser = null;
-        CurrentCustomer = null;
+        CurrentMember = null;
     }
 
     public async Task CheckSession()
@@ -175,14 +213,13 @@ internal class AuthService(Repository<User> userRepository, Repository<Customer>
             return;
         }
 
-        if (user.Role == UserRole.Customer)
+        if (user.Role == UserRole.Member)
         {
-            Customer? customer = _customerRepository.Get(x => x.Id, user.Id);
-            if(customer is not null)
+            Member? member = _memberRepository.Get(x => x.Id, user.Id);
+            if(member is not null)
             {
-                bool IsRegularMember = IsRegularCustomer(customer);
-                customer.IsRegularMember = IsRegularMember;
-                CurrentCustomer = customer;
+                member.IsRegularMember = IsRegularMember(member);
+                CurrentMember = member;
             }
         }
 
@@ -219,11 +256,11 @@ internal class AuthService(Repository<User> userRepository, Repository<Customer>
         CurrentUser.FullName = fullName;
         CurrentUser.UserName = userName;
         await _userRepository.FlushAsync();
-        if(CurrentUser.Role == UserRole.Customer && CurrentCustomer is not null)
+        if(CurrentUser.Role == UserRole.Member && CurrentMember is not null)
         {
-            CurrentCustomer.FullName = fullName;
-            CurrentCustomer.UserName = userName;
-            await _customerRepository.FlushAsync();
+            CurrentMember.FullName = fullName;
+            CurrentMember.UserName = userName;
+            await _memberRepository.FlushAsync();
         }
         response.IsSuccess = true;
         response.Message = "Personal details updated successfully!";
@@ -297,10 +334,10 @@ internal class AuthService(Repository<User> userRepository, Repository<Customer>
 
         CurrentUser.PasswordHash = Hasher.HashSecret(newPassword);
         await _userRepository.FlushAsync();
-        if(CurrentUser.Role == UserRole.Customer && CurrentCustomer is not null)
+        if(CurrentUser.Role == UserRole.Member && CurrentMember is not null)
         {
-            CurrentCustomer.PasswordHash = Hasher.HashSecret(newPassword);
-            await _customerRepository.FlushAsync();
+            CurrentMember.PasswordHash = Hasher.HashSecret(newPassword);
+            await _memberRepository.FlushAsync();
         }
         return response;
     }
@@ -317,11 +354,11 @@ internal class AuthService(Repository<User> userRepository, Repository<Customer>
     //    return MeetsCondition;
     //}
 
-    public bool IsRegularCustomer(Customer customer)
+    public bool IsRegularMember(Member member)
     {
         // Get all orders within the last 30 days for the given customer
         var allOrdersDatePast30Days = _orderRepository.GetAll()
-            .Where(order => order.CustomerId == customer.Id && order.OrderDate >= DateTime.UtcNow.AddDays(-30))
+            .Where(order => order.CustomerId == member.Id && order.OrderDate >= DateTime.UtcNow.AddDays(-30))
             .Select(order => order.OrderDate)
             .ToList();
 

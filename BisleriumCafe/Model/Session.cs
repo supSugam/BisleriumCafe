@@ -17,7 +17,7 @@ public class Session
 
     // Keep the session alive to auto-login without ever having to login.
     // Else the session is only valid for next 8 hours after login and has to re-login afterward. 
-    public static Session Generate(Guid userID, bool keepAlive = false,UserRole userRole=UserRole.Customer)
+    public static Session Generate(Guid userID, bool keepAlive = false,UserRole userRole=UserRole.Member)
     {
         return new Session()
         {

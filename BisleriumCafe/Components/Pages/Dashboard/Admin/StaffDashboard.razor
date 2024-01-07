@@ -142,7 +142,7 @@
         }
         try
         {
-            TaskResponse response = await _authService.Register(username, fullName, password, UserRole.Staff);
+            TaskResponse response = await _authService.Register(UserRole.Staff, username, fullName, password);
             Snackbar.Add(response.Message, response.IsSuccess ? MudBlazor.Severity.Success : MudBlazor.Severity.Error);
             if(response.IsSuccess)
             {

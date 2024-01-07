@@ -1,6 +1,7 @@
 ﻿@page "/order-now"
 @using BisleriumCafe.Components.Coffee;
 @using BisleriumCafe.Components.Reusables;
+@using BisleriumCafe.Components.User;
 @using BisleriumCafe.Helpers;
 @inject ISnackbar Snackbar;
 @inject BisleriumCafe.Repositories.Repository<CoffeeType> _coffeeRepository;
@@ -9,6 +10,35 @@
 @inject BisleriumCafe.Services.OrderService _orderService;
 @inject IDialogService DialogService;
 @inject NavigationManager _navigationManager;
+
+<div class="w-100 d-flex justify-content-between">
+        <MudText Typo="Typo.h6" Color="Color.Dark">
+            Order Mode: <strong>
+                @(ActiveMember is null ? "For Normal" : "For Member")
+            </strong>
+        </MudText>
+        @{
+            string IconString = ActiveMember is null ? Icons.Material.Filled.InsertEmoticon : Icons.Material.Filled.RestartAlt;
+            string ButtonText = ActiveMember is null ? "Switch to Member Mode" : "Switch to Customer Mode";
+        }
+    <MudButton StartIcon="@IconString" Color="Color.Dark" Variant="Variant.Filled" Size="Size.Medium" OnClick="UpdateOrderMode">
+        @ButtonText
+</MudButton>
+</div>
+
+@if (ActiveMember is not null)
+{
+    <MudGrid>
+        <ContentCardWithIcon Content="@ActiveMember.TotalOrders.ToString()" Title="Total Orders" Icon="@Icons.Material.Filled.ShoppingBasket" />
+        @{
+            string membershipStatus = ActiveMember.IsRegularMember ? "Yes" : "No";
+            string freeCoffeeProgress = $"{ActiveMember.FreeCoffeeProgress.ToString()}/10";
+        }
+        <ContentCardWithIcon Content="@membershipStatus" Title="Regular Member" Icon="@Icons.Material.Filled.Loyalty" />
+        <ContentCardWithIcon Content="@ActiveMember.FreeCoffeeCount.ToString()" Title="Free Coffee Count" Icon="@Icons.Material.Filled.MoneyOff" />
+        <ContentCardWithIcon Content="@freeCoffeeProgress" Title="Free Coffee Progress" Icon="@Icons.Material.Filled.Stairs" />
+    </MudGrid>
+}
 
 <div class="d-flex gap-3 w-100 flex-column">
     <div class="d-flex gap-2 justify-space-between flex-wrap">
@@ -50,7 +80,7 @@
         <div class="d-flex flex-column gap-1">
                 <MudText Typo="Typo.body1" Color="Color.Dark">
                     You have @FreeCoffeeCount free coffee(s) to redeem.
-                    @_authService?.CurrentCustomer?.FreeCoffeeCount
+                    @_authService?.CurrentMember?.FreeCoffeeCount
                 </MudText>
             <MudSwitch Label="Redeem Free Coffee"
                 Disabled="FreeCoffeeCount==0"
@@ -79,7 +109,7 @@
             <div class="d-flex gap-1 align-items-center">
                 <MudText Typo="Typo.body1" Color="Color.Dark">
                     @{
-                        string discountText = _authService.CurrentCustomer is not null && _authService.CurrentCustomer.IsRegularMember == true ? "(Membership 10%)" : TotalPrice > 499 ? "(9% Discount)" : "(No Discount)";
+                        string discountText = _authService.CurrentMember is not null && _authService.CurrentMember.IsRegularMember == true ? "(Membership 10%)" : TotalPrice > 499 ? "(9% Discount)" : "(No Discount)";
                     }
                     Discount @discountText:
                 </MudText>
@@ -134,6 +164,65 @@ Quantity--;
         _coffeeAddins = _addinRepository.GetAll();
     }
 
+    private Member? ActiveMember =>_authService.CurrentMember;
+    private IDialogReference RegisterMemberDialogRef;
+    private IDialogReference UpdateMemberDialogRef;
+
+    // Update Order Mode
+    private async void UpdateOrderMode()
+    {
+        if(ActiveMember is null)
+        {
+            RenderFragment fragment = builder =>
+    {
+        builder.OpenComponent(0, typeof(UpdateActiveMember));
+        builder.AddAttribute(1, "OnConfirmEditClick", new Func<TaskResponse, Task>(async (TaskResponse response) =>
+    {
+        if (response.IsSuccess)
+        {
+            UpdateMemberDialogRef.Close();
+            StateHasChanged();
+        }
+    }));
+        builder.CloseComponent();
+    };
+            var parameters = new DialogParameters<Dialog>();
+            parameters.Add(nameof(Dialog.ChildContent), fragment);
+            parameters.Add("Title", "Update Member");
+            parameters.Add("ShowDialogActions", false);
+            UpdateMemberDialogRef = DialogService.Show<Dialog>("Update Member", parameters);
+        }
+        else
+        {
+            TaskResponse response = await _authService.RemoveCurrentMember(); 
+                            Snackbar.Add(response.Message, response.IsSuccess ? Severity.Success : Severity.Error);
+        }
+
+    }
+
+    // Register Member
+
+    private async void RegisterMember()
+    {
+        RenderFragment fragment = builder =>
+        {
+            builder.OpenComponent(0, typeof(RegisterMember));
+            builder.AddAttribute(1, "OnConfirmEditClick", new Func<TaskResponse, Task>(async (TaskResponse response) =>
+            {
+                if (response.IsSuccess)
+                {
+                    RegisterMemberDialogRef.Close();
+                }
+            }));
+            builder.CloseComponent();
+        };
+        var parameters = new DialogParameters<Dialog>();
+        parameters.Add(nameof(Dialog.ChildContent), fragment);
+        parameters.Add("Title", "Register Member");
+        parameters.Add("ShowDialogActions", false);
+        RegisterMemberDialogRef = DialogService.Show<Dialog>("Register Member", parameters);
+    }
+
     // Data for Order
     private CoffeeType? SelectedCoffeeType { get; set; }
     private List<CoffeeAddIn> SelectedCoffeeAddins = new();
@@ -172,14 +261,14 @@ Quantity--;
     {
         get
         {
-            return _authService.CurrentCustomer is not null && _authService.CurrentCustomer.IsRegularMember == true ? TotalPrice / 10 : TotalPrice > 499 ? TotalPrice / 9 > 99 ? 99 : TotalPrice / 9 : 0;
+            return _authService.CurrentMember is not null && _authService.CurrentMember.IsRegularMember == true ? TotalPrice / 10 : TotalPrice > 499 ? TotalPrice / 9 > 99 ? 99 : TotalPrice / 9 : 0;
         }
     }
 
     private decimal ServiceCharge => TotalPrice / 10; // 10% service charge
     private decimal GrandTotal => TotalPrice - Discount + ServiceCharge;
     private bool RedeemFreeCoffee { get; set; } = false;
-    private int FreeCoffeeCount => _authService.CurrentCustomer is not null ? _authService.CurrentCustomer.FreeCoffeeCount : 0;
+    private int FreeCoffeeCount => _authService.CurrentMember is not null ? _authService.CurrentMember.FreeCoffeeCount : 0;
     private int RedeemedFreeCoffeeCount = 0;
 
     private IEnumerable<CoffeeType> _coffeeTypes;
@@ -214,8 +303,9 @@ Quantity--;
 
     private async void OnOrderSubmit()
     {
-        if (_authService.CurrentUser is null)
+        if (_authService.CurrentMember is null)
         {
+            // Normal Order
             Snackbar.Add("Please login to place an order", Severity.Error);
             return;
         }
@@ -237,7 +327,12 @@ Quantity--;
         {
             order.RedeemedFreeCoffeeCount = RedeemedFreeCoffeeCount;
         }
-
+        if(ActiveMember is not null)
+        {
+            order.CustomerId = _authService.CurrentMember.Id;
+            order.CustomerName = _authService.CurrentMember.FullName;
+            order.CustomerUserName = _authService.CurrentMember.UserName;
+        }
 
         var parameters = new DialogParameters<Dialog>();
         parameters.Add("Title", "Confirm Order");
@@ -245,30 +340,20 @@ Quantity--;
         parameters.Add("ConfirmButtonText", "Confirm");
         parameters.Add("ConfirmButtonColor", Color.Dark);
 
-        RenderFragment rf =@<MudText Typo="Typo.body1" Color="Color.Dark"> Are you sure  you want to order? You cannot cancel an order once it's placed.</MudText>;
+        RenderFragment rf =@<MudText Typo="Typo.body1" Color="Color.Dark"> Are you sure you want to order? You cannot cancel an order once it's placed.</MudText>;
 
         parameters.Add(nameof(Dialog.ChildContent), rf);
 
-        var dialog = await DialogService.ShowAsync<Dialog>("Delete Coffee", parameters);
+        var dialog = await DialogService.ShowAsync<Dialog>("Order Coffee", parameters);
         var result = await dialog.Result;
 
         if (!result.Canceled)
         {
-            try
-            {
-                TaskResponse reponse = await _orderService.OrderACoffee(order);
-                Snackbar.Add(reponse.Message, reponse.IsSuccess ? Severity.Success : Severity.Error);
-                await Task.Delay(2000);
-if (reponse.IsSuccess)
-                {
-                    _navigationManager.NavigateTo("/my-orders");
-                }
-            }
-            catch (Exception ex)
-            {
-                Snackbar.Add(ex.Message, MudBlazor.Severity.Error);
-            }
+
+                TaskResponse response = await _orderService.OrderACoffee(order);
+                Snackbar.Add(response.Message, response.IsSuccess ? Severity.Success : Severity.Error);
         }
+        
     }
 
 }
