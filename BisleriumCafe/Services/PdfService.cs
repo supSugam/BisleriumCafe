@@ -22,13 +22,11 @@ namespace BisleriumCafe.Services
 
                 // Uncomment the following lines if you want to set additional properties
                 // For example, setting a base URI for relative paths in the HTML
-                // converterProperties.SetBaseUri("file:///C:/Your/Base/Path/");
+                // converterProperties.SetBaseUri(...
 
-                using (FileStream pdfDest = File.Open(pdfFilePath, FileMode.Create))
-                {
-                    ConverterProperties converterProperties = new ConverterProperties();
-                    HtmlConverter.ConvertToPdf(htmlContent, pdfDest, converterProperties);
-                }
+                FileStream pdfDest = File.Open(pdfFilePath, FileMode.Create);
+                ConverterProperties converterProperties = new ConverterProperties();
+                HtmlConverter.ConvertToPdf(htmlContent, pdfDest, converterProperties);
 
                 return true; // PDF generation successful
             }
