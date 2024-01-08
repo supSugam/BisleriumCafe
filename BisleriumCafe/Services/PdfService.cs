@@ -13,10 +13,7 @@ namespace BisleriumCafe.Services
                 // Get the full file path for the PDF
                 string pdfFilePath = Path.Combine(Explorer.GetDocumentsDirectoryPath(), fileName + ".pdf");
 
-                if(!File.Exists(pdfFilePath))
-                {
-                    File.Create(pdfFilePath);
-                }
+               
 
                 // Initialize ConverterProperties
 
@@ -24,7 +21,7 @@ namespace BisleriumCafe.Services
                 // For example, setting a base URI for relative paths in the HTML
                 // converterProperties.SetBaseUri(...
 
-                using FileStream pdfDest = File.Open(pdfFilePath, FileMode.Create);
+                using FileStream pdfDest = File.Open(pdfFilePath, FileMode.CreateNew);
                 ConverterProperties converterProperties = new ConverterProperties();
                 HtmlConverter.ConvertToPdf(htmlContent, pdfDest, converterProperties);
 

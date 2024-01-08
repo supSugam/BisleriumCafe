@@ -33,16 +33,11 @@
     <script>
         async function GetHtmlContentOfAnElement(elementId) {
             let finalResult = "";
-            await setTimeout(() => { }, 1);
-            console.log(elementId);
             var element = document.getElementById(elementId);
-            console.log(element);
             var result = element.innerHTML;
             if (result) {
 finalResult = result;
             }
-
-            console.log(finalResult);
             return finalResult;
         }
 

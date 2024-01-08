@@ -107,23 +107,30 @@ internal class OrderService(Repository<Member> memberRepository, Repository<Orde
         return topCoffeeTypes;
     }
 
-    public IEnumerable<CoffeeAddIn> GetTopCoffeeAddInsWithInTimeRange(DateTime start, DateTime end,int LIMIT=5)
+    public IEnumerable<CoffeeAddIn> GetTopCoffeeAddInsWithInTimeRange(DateTime start, DateTime end, int LIMIT = 5)
     {
         IEnumerable<CoffeeAddIn> allCoffeeAddIns = GetOrdersWithInTimeRange(start, end).SelectMany(order => order.CoffeeAddIns);
 
         var coffeeAddInCounts = allCoffeeAddIns
-            .GroupBy(coffeeAddIn => coffeeAddIn)
+            .GroupBy(coffeeAddIn => coffeeAddIn.Id) // Group by unique identifier (e.g., ID)
             .Select(group => new
             {
-                CoffeeAddIn = group.Key,
+                CoffeeAddInId = group.Key,
                 Count = group.Count()
             });
 
-        var topCoffeeAddIns = coffeeAddInCounts
+        var topCoffeeAddInIds = coffeeAddInCounts
             .OrderByDescending(coffeeAddInCount => coffeeAddInCount.Count)
             .Take(LIMIT)
-            .Select(coffeeAddInCount => coffeeAddInCount.CoffeeAddIn);
+            .Select(coffeeAddInCount => coffeeAddInCount.CoffeeAddInId);
+
+        // Retrieve the CoffeeAddIn objects based on the unique identifiers
+        var topCoffeeAddIns = allCoffeeAddIns
+            .Where(coffeeAddIn => topCoffeeAddInIds.Contains(coffeeAddIn.Id))
+            .Distinct();
+
         return topCoffeeAddIns;
     }
+
 
 }
