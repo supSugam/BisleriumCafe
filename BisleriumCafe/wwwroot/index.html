@@ -39,29 +39,9 @@
             console.log(element);
             var result = element.innerHTML;
             if (result) {
-                finalResult = `
-                        <!DOCTYPE html>
-                        <html lang="en">
-<head>
-                            <meta charset="utf-8" />
-                            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-                            <title>Bislerium Cafe</title>
-                            <base href="/" />
-                            <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
-                            <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
-                            <link rel="stylesheet" href="BisleriumCafe.styles.css" />
-                            <link rel="icon" type="image/png" href="favicon.png" />
-                            <link rel="stylesheet" href="css/app.css" />
-                            <link rel="stylesheet" href="css/styles.css" />
-                            <link rel="stylesheet" href="css/scrollbar.css" />
-                            </head>
-<body>
-${result}
-</body>
-</html>
-`
-
+finalResult = result;
             }
+
             console.log(finalResult);
             return finalResult;
         }

@@ -1,12 +1,33 @@
 ﻿@using BisleriumCafe.Enums;
 @using BisleriumCafe.Helpers
+@inject BisleriumCafe.Services.OrderService _orderService
 
-<table style="width: 100%; border-collapse: collapse; margin-top: 20px; background-color: #F5EDDA; border: 2px solid #8B4513; color: #8B4513;">
-    <thead>
-        <tr style="background-color: #8B4513; color: #F5EDDA; font-weight: bold;">
-            @foreach (var h in headings)
+<div style="display:flex;flex-direction:column;gap:24px;">
+    @if (SelectedDate is not null)
+    {
+        <h4 style="color:#66462F;font-weight:500;">
+            Report For
+            @if (DatePeriod == DatePeriod.Daily)
             {
-                <th style="padding: 10px; border: 2px solid #8B4513;">@h</th>
+                @Date.GetFormattedDate(SelectedDate)
+            }
+            else
+            {
+                @SelectedDate.Value.ToString("MMMM, yyyy")
+            }
+        </h4>
+    }
+@* Orders/Revenue *@
+<div style="display:flex;flex-direction:column;gap:12px;">
+
+ <h5 style="color:#66462F;font-weight:500;">All Orders and Revenue</h5>
+
+<table style="width: 100%; border-collapse: collapse; background-color: #F5EDDA; border: 2px solid #66462F; color: #66462F;">
+    <thead>
+        <tr style="background-color: #66462F; color: #F5EDDA; font-weight: bold;">
+            @foreach (var h in OrderHeadings)
+            {
+                <th style="padding: 10px; border: 2px solid #66462F;">@h</th>
             }
         </tr>
     </thead>
@@ -14,35 +35,111 @@
         @foreach (Order orderData in OrderData)
         {
             <tr style="background-color: #F5EDDA;">
-                <td style="padding: 10px; border: 2px solid #8B4513;">@Index</td>
-                <td style="padding: 10px; border: 2px solid #8B4513;">@Date.GetFormattedDate(orderData.OrderDate)</td>
-                <td style="padding: 10px; border: 2px solid #8B4513;">@orderData.Quantity</td>
-                <td style="padding: 10px; border: 2px solid #8B4513;">Rs. @orderData.Discount.ToFormattedDecimal()</td>
-                <td style="padding: 10px; border: 2px solid #8B4513;">Rs. @orderData.ServiceCharge</td>
-                <td style="padding: 10px; border: 2px solid #8B4513;">Rs. @orderData.Total.ToFormattedDecimal()</td>
-                <td style="padding: 10px; border: 2px solid #8B4513;">Rs. @orderData.GrandTotal.ToFormattedDecimal()</td>
+                        <td style="padding: 10px; border: 2px solid #66462F;">@OrdersIndex</td>
+                <td style="padding: 10px; border: 2px solid #66462F;">@Date.GetFormattedDate(orderData.OrderDate)</td>
+                <td style="padding: 10px; border: 2px solid #66462F;">@orderData.Quantity</td>
+                <td style="padding: 10px; border: 2px solid #66462F;">Rs. @orderData.Discount.ToFormattedDecimal()</td>
+                <td style="padding: 10px; border: 2px solid #66462F;">Rs. @orderData.ServiceCharge</td>
+                <td style="padding: 10px; border: 2px solid #66462F;">Rs. @orderData.Total.ToFormattedDecimal()</td>
+                <td style="padding: 10px; border: 2px solid #66462F;">Rs. @orderData.GrandTotal.ToFormattedDecimal()</td>
             </tr>
-            Index++;
+                    OrdersIndex++;
         }
     </tbody>
 </table>
+</div>
+
+@* Top 5 Coffee Types *@
+
+    <div style="display:flex;flex-direction:column;gap:12px;">
+
+        <h5 style="color:#66462F;font-weight:500;">Top 5 Most Purchased Coffee Types</h5>
+
+        <table style="width: 100%; border-collapse: collapse; background-color: #F5EDDA; border: 2px solid #66462F; color: #66462F;">
+            <thead>
+                <tr style="background-color: #66462F; color: #F5EDDA; font-weight: bold;">
+                    @foreach (var h in CoffeeTypeHeadings)
+                    {
+                        <th style="padding: 10px; border: 2px solid #66462F;">@h</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (CoffeeType coffeeType in CoffeeTypesData)
+                {
+                    <tr style="background-color: #F5EDDA;">
+<td style="padding: 10px; border: 2px solid #66462F;">@CoffeeTypesIndex</td>
+                        <td style="padding: 10px; border: 2px solid #66462F;">@coffeeType.CoffeeName</td>
+                        <td style="padding: 10px; border: 2px solid #66462F;">Rs. @coffeeType.CoffeePrice</td>
+                    </tr>
+                    CoffeeTypesIndex++;
+                }
+            </tbody>
+        </table>
+    </div>
+
+@* Top 5 AddIns *@
+<div style="display:flex;flex-direction:column;gap:12px;">
+
+    <h5 style="color:#66462F;font-weight:500;">Top 5 Most Purchased AddIns</h5>
+
+    <table style="width: 100%; border-collapse: collapse; background-color: #F5EDDA; border: 2px solid #66462F; color: #66462F;">
+        <thead>
+            <tr style="background-color: #66462F; color: #F5EDDA; font-weight: bold;">
+                @foreach (var h in AddInHeadings)
+                {
+                    <th style="padding: 10px; border: 2px solid #66462F;">@h</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (CoffeeAddIn addIn in AddInsData)
+            {
+                <tr style="background-color: #F5EDDA;">
+<td style="padding: 10px; border: 2px solid #66462F;">@AddInsIndex</td>
+                    <td style="padding: 10px; border: 2px solid #66462F;">@addIn.AddInName</td>
+                    <td style="padding: 10px; border: 2px solid #66462F;">Rs. @addIn.AddInPrice</td>
+</tr>
+                AddInsIndex++;
+            }
+        </tbody>
+    </table>
+
+    </div>
+
+
+</div>
 
 
 
 @code {
 
-    int Index = 1;
+    int OrdersIndex = 1;
+    int CoffeeTypesIndex = 1;
+int AddInsIndex = 1;
 
-    private string[] headings = new string[] { "SN", "Order Date", "Quantity", "Discount", "SC", "Total","Grand Total" };
+    private string[] OrderHeadings = new string[] { "SN", "Order Date", "Quantity", "Discount", "SC", "Total", "Grand Total" };
 
     [Parameter]
     public DatePeriod DatePeriod { get; set; } = DatePeriod.Monthly;
 
+    private DateSpan DateSpan => DatePeriod == DatePeriod.Daily ? DateSpan.Day : DateSpan.Month;
+
     [Parameter]
     public IEnumerable<Order> OrderData { get; set; }
 
-[Parameter]
-public DateTime? SelectedDate { get; set; }
+    [Parameter]
+    public DateTime? SelectedDate { get; set; }
+
+
+    // Top 5 Coffee Types
+    private string[] CoffeeTypeHeadings = new string[] { "SN", "Coffee Type", "Price" };
+    public IEnumerable<CoffeeType> CoffeeTypesData => SelectedDate is not null ? _orderService.GetTopCoffeeTypesWithInTimeRange(Date.GetStartOfDate(DateSpan, SelectedDate.Value), Date.GetEndOfDate(DateSpan, SelectedDate.Value)) : new List<CoffeeType>();
+
+
+    // Top 5 AddIns
+private string[] AddInHeadings = new string[] { "SN", "AddIn Name", "Price" };
+    public IEnumerable<CoffeeAddIn> AddInsData => SelectedDate is not null ? _orderService.GetTopCoffeeAddInsWithInTimeRange(Date.GetStartOfDate(DateSpan, SelectedDate.Value), Date.GetEndOfDate(DateSpan, SelectedDate.Value)) : new List<CoffeeAddIn>();
 
 
 }

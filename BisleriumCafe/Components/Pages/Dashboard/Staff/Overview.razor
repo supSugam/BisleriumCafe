@@ -16,7 +16,6 @@
         Generate Sales Report
     </MudText>
     <div class="d-flex gap-3 shadow background-light w-100 p-4 justify-content-center flex-column">
-
         <MudSelect Value="_selectedDatePeriod" ValueChanged="(DatePeriod datePeriod)=>UpdateSelectedDatePeriod(datePeriod)" T="DatePeriod" Label="Select Date Period" Variant="Variant.Filled">
             <MudSelectItem Value="DatePeriod.Daily">
                 <MudIcon Icon="@Icons.Material.Filled.TaskAlt" Class="mr-1"></MudIcon>
@@ -29,6 +28,20 @@
         </MudSelect>
         @{
             bool SelectAllEnabled = SelectedYear is not null;
+        }
+        @if(_selectedDatePeriod == DatePeriod.Daily)
+        {
+            <MudDatePicker Required="true"
+                           Label="Select a Date"
+                           Date="@SelectedYear"
+                           DateChanged="UpdateSelectedYear"
+                           OpenTo="OpenTo.Date"
+                           FixMonth="@DateTime.Today.Month"
+                           FixDay="@DateTime.Today.Day"
+                           DateFormat="yyyy/MM/dd"
+                           MinDate="@Date.GetStartOfDate(DateSpan.Year, DateTime.Today)"
+                           MaxDate="@DateTime.Today"
+                           Color="Color.Dark" />
         }
         @if (_selectedDatePeriod == DatePeriod.Monthly)
         {
@@ -72,68 +85,58 @@
                 }
             </MudSelect>
         }
+
+
         <MudButton Variant="Variant.Filled" Color="Color.Dark" Class="mt-2 ml-auto" OnClick="HandleReportGenerate">Generate Report</MudButton>
 
         <MudProgressLinear Color="Color.Dark" Value="@Value" Class="my-3" />
     </div>
 
     <div id="@REPORT_CONTAINER" class="d-flex p-2 flex-column gap-4 w-100">
-        <MudGrid>
-            @{
-                var allOrders = AllOrdersOfSelectedMonths.SelectMany(monthOrders => monthOrders);
-
-                // Group orders by CoffeeType and count the occurrences
-                var coffeeTypeCounts = allOrders
-                .GroupBy(order => order.CoffeeType)
-                .Select(group => new
-                {
-                    CoffeeType = group.Key,
-                    Count = group.Count()
-                });
-
-                // Find the most ordered CoffeeType
-                var Top5CoffeeTypes = coffeeTypeCounts
-                .OrderByDescending(item => item.Count).Take(5);
 
 
-                var allCoffeeAddIns = AllOrdersOfSelectedMonths
-                .SelectMany(monthOrders => monthOrders.SelectMany(order => order.CoffeeAddIns));
-
-                // Group CoffeeAddIns by their properties and count the occurrences
-                var coffeeAddInCounts = allCoffeeAddIns
-                .GroupBy(coffeeAddIn => new { coffeeAddIn.Id, coffeeAddIn.AddInName })
-                .Select(group => new
-                {
-                    CoffeeAddIn = group.Key,
-                    Count = group.Count()
-                });
-
-                // Find the most ordered CoffeeAddIn
-                var Top5CoffeeAddins = coffeeAddInCounts
-                .OrderByDescending(item => item.Count).Take(5);
-            }
-            @if (Top5CoffeeTypes is not null)
+        @if(_selectedDatePeriod == DatePeriod.Monthly && SelectedYear is not null)
+        {
+            @if (AllOrdersOfSelectedMonths.Count() == 0)
             {
-
-                @foreach(var coffeeType in Top5CoffeeTypes)
-                {
-                    <ContentCardWithIcon Content="@coffeeType.CoffeeType.CoffeeName" Title="Most Ordered Coffee" Icon="@Icons.Material.Filled.Coffee" />
-                }
-
+<MudText Typo="Typo.h5" Color="Color.Dark" Style="text-align:center">
+                                      No Orders Found for this date
+                </MudText>
             }
-
-            @if(Top5CoffeeAddins is not null)
+            else
             {
-@foreach(var coffeeAddIn in Top5CoffeeAddins)
+<MudText Typo="Typo.h5" Color="Color.Dark" Style="text-align:center">
+                    Report for @GetMultiSelectionText(SelectedMonths.ToList()) of @SelectedYear.Value.Year
+</MudText>
+                @foreach (IEnumerable<Order> orders in AllOrdersOfSelectedMonths)
                 {
-                    <ContentCardWithIcon Content="@coffeeAddIn.CoffeeAddIn.AddInName" Title="Most Ordered AddIn" Icon="@Icons.Material.Filled.AddCircle" />
+                    <SalesReportTable DatePeriod="@_selectedDatePeriod" OrderData="@orders" SelectedDate="@SelectedYear" />
                 }
             }
-        </MudGrid>
-                    @foreach (IEnumerable<Order> orders in AllOrdersOfSelectedMonths)
+        }
+
+        @if (_selectedDatePeriod == DatePeriod.Daily && SelectedDay is not null)
+        {
+            @if (OrdersOfSelectedDay.Count() == 0)
             {
-                <SalesReportTable DatePeriod="@_selectedDatePeriod" OrderData="@orders" SelectedDate="@SelectedYear" />;
+                <MudText Typo="Typo.h5" Color="Color.Dark" Style="text-align:center">
+                    No Orders Found for this date
+                </MudText>
             }
+            else
+            {
+                <MudText Typo="Typo.h5" Color="Color.Dark" Style="text-align:center">
+                    Report for @Date.GetFormattedDate(SelectedDay.Value)
+                </MudText>
+
+                    <SalesReportTable DatePeriod="@_selectedDatePeriod" OrderData="@OrdersOfSelectedDay" SelectedDate="@SelectedDay" />
+            }
+
+
+        }
+
+
+
     </div>
 </div>
 @code {
@@ -142,26 +145,22 @@
     private const string REPORT_CONTAINER = "REPORT_CONTAINER";
 
 
-    private async void GeneratePdf()
+    private async Task<bool> GeneratePdf()
     {
         await Task.Delay(2000);
         string HtmlContent = await JS.InvokeAsync<string>("GetHtmlContentOfAnElement", REPORT_CONTAINER);
-        bool Generated = await _pdfService.GeneratePdf(HtmlContent,"testbro");
-        if (Generated)
-        {
-            Snackbar.Add("Report generated successfully", Severity.Success);
-        }
-        else
-        {
-            Snackbar.Add("Failed to generate report", Severity.Error);
-        }
+        return await _pdfService.GeneratePdfFromHtmlContent(HtmlContent, $"{_selectedDatePeriod}SalesReport_{DateTime.Now.ToString("dd-MM-yyyy")}");
+
     }
     // Table Data
     List<IEnumerable<Order>> AllOrdersOfSelectedMonths = new();
-    private string HtmlContent = "";
+    IEnumerable<Order> OrdersOfSelectedDay = new List<Order>();
+
+
 
     //
     private DateTime? SelectedYear { get; set; }
+    private DateTime? SelectedDay { get; set; }
     private DatePeriod _selectedDatePeriod;
     private void UpdateSelectedDatePeriod(DatePeriod datePeriod)
     {
@@ -177,7 +176,14 @@
                 return;
             }
         }
-        SelectedYear = dateTime;
+        if(_selectedDatePeriod == DatePeriod.Daily)
+        {
+            SelectedDay = dateTime;
+        }
+        else
+        {
+            SelectedYear = dateTime;
+        }
     }
 
     private string SelectedValue { get; set; } = "Nothing selected";
@@ -197,6 +203,7 @@
     // Progress
     private int Value { get; set; } = 0;
     bool _disposed;
+
     public void Dispose() => _disposed = true;
     public async void SimulateProgress()
     {
@@ -221,10 +228,18 @@
     // Report Generation
     private async void HandleReportGenerate()
     {
+        SimulateProgress();
 
         if (_selectedDatePeriod == DatePeriod.Daily)
         {
             // Generate Daily Report
+
+            if(SelectedDay is null)
+            {
+                Snackbar.Add("Please select a date", Severity.Error);
+                return;
+            }
+            OrdersOfSelectedDay = _orderService.GetOrdersWithInTimeRange(Date.GetStartOfDate(DateSpan.Day,SelectedDay.Value), Date.GetEndOfDate(DateSpan.Day, SelectedDay.Value));
 
         }
 
@@ -251,13 +266,17 @@
                 IEnumerable<Order> OrdersOfSelectedMonth = _orderService.GetOrdersWithInTimeRange(StartDate, EndDate);
                 AllOrdersOfSelectedMonths.Add(OrdersOfSelectedMonth);
             }
-
-            GeneratePdf();
-
-
         }
-
-            
+        bool IsGenerated = await GeneratePdf();
+if (IsGenerated)
+        {
+            Snackbar.Add("Report Generated Successfully", Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add("Report Generation Failed", Severity.Error);
+        }
+        Dispose();
 
         }
 }

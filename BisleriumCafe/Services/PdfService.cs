@@ -6,7 +6,7 @@ namespace BisleriumCafe.Services
     public class PdfService()
     {
 
-        public async Task<bool> GeneratePdf(string htmlContent, string fileName)
+        public async Task<bool> GeneratePdfFromHtmlContent(string htmlContent, string fileName)
         {
             try
             {
@@ -24,7 +24,7 @@ namespace BisleriumCafe.Services
                 // For example, setting a base URI for relative paths in the HTML
                 // converterProperties.SetBaseUri(...
 
-                FileStream pdfDest = File.Open(pdfFilePath, FileMode.Create);
+                using FileStream pdfDest = File.Open(pdfFilePath, FileMode.Create);
                 ConverterProperties converterProperties = new ConverterProperties();
                 HtmlConverter.ConvertToPdf(htmlContent, pdfDest, converterProperties);
 

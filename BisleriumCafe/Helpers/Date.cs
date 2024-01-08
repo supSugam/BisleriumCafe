@@ -10,9 +10,13 @@ namespace BisleriumCafe.Helpers
     }
     public static class Date
     {
-        public static string GetFormattedDate(this DateTime date)
+        public static string GetFormattedDate(this DateTime? date)
         {
-            return date.ToString("MMM dd, yyyy");
+            if (date == null)
+            {
+                return "No Date";
+            }
+            return date.Value.ToString("MMM dd, yyyy");
         }
         public static string ToFullFormattedDate(this DateTime date)
         {

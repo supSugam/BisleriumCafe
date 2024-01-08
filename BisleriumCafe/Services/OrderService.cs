@@ -88,4 +88,42 @@ internal class OrderService(Repository<Member> memberRepository, Repository<Orde
         return _orderRepository.GetAll().Where(order => order.OrderDate >= start && order.OrderDate <= end);
     }
 
+    public IEnumerable<CoffeeType> GetTopCoffeeTypesWithInTimeRange(DateTime start, DateTime end,int LIMIT=5)
+    {
+        IEnumerable<Order> allOrders = GetOrdersWithInTimeRange(start, end);
+
+        var coffeeTypeCounts = allOrders
+        .GroupBy(order => order.CoffeeType)
+        .Select(group => new
+        {
+            CoffeeType = group.Key,
+            Count = group.Count()
+        });
+
+        var topCoffeeTypes = coffeeTypeCounts
+            .OrderByDescending(coffeeTypeCount => coffeeTypeCount.Count)
+            .Take(LIMIT)
+            .Select(coffeeTypeCount => coffeeTypeCount.CoffeeType);
+        return topCoffeeTypes;
+    }
+
+    public IEnumerable<CoffeeAddIn> GetTopCoffeeAddInsWithInTimeRange(DateTime start, DateTime end,int LIMIT=5)
+    {
+        IEnumerable<CoffeeAddIn> allCoffeeAddIns = GetOrdersWithInTimeRange(start, end).SelectMany(order => order.CoffeeAddIns);
+
+        var coffeeAddInCounts = allCoffeeAddIns
+            .GroupBy(coffeeAddIn => coffeeAddIn)
+            .Select(group => new
+            {
+                CoffeeAddIn = group.Key,
+                Count = group.Count()
+            });
+
+        var topCoffeeAddIns = coffeeAddInCounts
+            .OrderByDescending(coffeeAddInCount => coffeeAddInCount.Count)
+            .Take(LIMIT)
+            .Select(coffeeAddInCount => coffeeAddInCount.CoffeeAddIn);
+        return topCoffeeAddIns;
+    }
+
 }
