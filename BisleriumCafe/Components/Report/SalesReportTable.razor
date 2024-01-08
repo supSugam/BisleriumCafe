@@ -96,7 +96,7 @@
             @foreach (CoffeeAddIn addIn in AddInsData)
             {
                 <tr style="background-color: #F5EDDA;">
-<td style="padding: 10px; border: 2px solid #66462F;">@AddInsIndex</td>
+<td style="padding: 10px; border: 2px solid #66462F;">@AddInsIndex+@addIn.Id</td>
                     <td style="padding: 10px; border: 2px solid #66462F;">@addIn.AddInName</td>
                     <td style="padding: 10px; border: 2px solid #66462F;">Rs. @addIn.AddInPrice</td>
 </tr>

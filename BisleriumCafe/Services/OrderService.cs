@@ -109,26 +109,20 @@ internal class OrderService(Repository<Member> memberRepository, Repository<Orde
 
     public IEnumerable<CoffeeAddIn> GetTopCoffeeAddInsWithInTimeRange(DateTime start, DateTime end, int LIMIT = 5)
     {
-        IEnumerable<CoffeeAddIn> allCoffeeAddIns = GetOrdersWithInTimeRange(start, end).SelectMany(order => order.CoffeeAddIns);
-
-        var coffeeAddInCounts = allCoffeeAddIns
-            .GroupBy(coffeeAddIn => coffeeAddIn.Id) // Group by unique identifier (e.g., ID)
+        IEnumerable<Order> allOrders = GetOrdersWithInTimeRange(start, end);
+        var coffeeAddIns = allOrders
+            .SelectMany(order => order.CoffeeAddIns)
+            .GroupBy(addIn => addIn)
             .Select(group => new
             {
-                CoffeeAddInId = group.Key,
+                CoffeeAddIn = group.Key,
                 Count = group.Count()
             });
 
-        var topCoffeeAddInIds = coffeeAddInCounts
-            .OrderByDescending(coffeeAddInCount => coffeeAddInCount.Count)
+        var topCoffeeAddIns = coffeeAddIns
+            .OrderByDescending(coffeeAddIn => coffeeAddIn.Count)
             .Take(LIMIT)
-            .Select(coffeeAddInCount => coffeeAddInCount.CoffeeAddInId);
-
-        // Retrieve the CoffeeAddIn objects based on the unique identifiers
-        var topCoffeeAddIns = allCoffeeAddIns
-            .Where(coffeeAddIn => topCoffeeAddInIds.Contains(coffeeAddIn.Id))
-            .Distinct();
-
+            .Select(coffeeAddIn => coffeeAddIn.CoffeeAddIn);
         return topCoffeeAddIns;
     }
 

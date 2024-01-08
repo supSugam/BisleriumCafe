@@ -92,7 +92,7 @@
         }
     </div>
 
-    <div id="@REPORT_CONTAINER" class="d-flex p-2 flex-column gap-4 w-100">
+    <div id="@REPORT_CONTAINER" class="d-flex p-2 flex-column gap-4 w-100 mt-4">
 
         @if(_selectedDatePeriod == DatePeriod.Monthly && SelectedYear is not null)
         {
@@ -256,6 +256,7 @@ if(OrdersOfSelectedDay.Count() == 0)
         }
         bool IsGenerated = await GeneratePdf();
         ShowProgress = false;
+        StateHasChanged();
 
 if (IsGenerated)
         {
