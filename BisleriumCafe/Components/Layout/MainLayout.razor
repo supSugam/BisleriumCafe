@@ -6,11 +6,11 @@
 @inject Microsoft.AspNetCore.Components.NavigationManager _navigationManager;
 @inject BisleriumCafe.Services.SessionService _sessionService;
 @inject BisleriumCafe.Services.AuthService _authService;
-@inject BisleriumCafe.Repositories.Repository<User> _usersRepository;
-@inject BisleriumCafe.Repositories.Repository<Member> _membersRepository;
-@inject BisleriumCafe.Repositories.Repository<CoffeeType> _coffeeRepository;
-@inject BisleriumCafe.Repositories.Repository<CoffeeAddIn> _addInsRepository;
-@inject BisleriumCafe.Repositories.Repository<Order> _orderRepository;
+@inject BisleriumCafe.Repositories.Warehouse<User> _usersWarehouse;
+@inject BisleriumCafe.Repositories.Warehouse<Member> _membersWarehouse;
+@inject BisleriumCafe.Repositories.Warehouse<CoffeeType> _coffeeWarehouse;
+@inject BisleriumCafe.Repositories.Warehouse<CoffeeAddIn> _addInsWarehouse;
+@inject BisleriumCafe.Repositories.Warehouse<Order> _orderWarehouse;
 
 <MudThemeProvider />
 <MudDialogProvider />
@@ -124,11 +124,11 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await _usersRepository.LoadAsync();
-        await _membersRepository.LoadAsync();
-        await _coffeeRepository.LoadAsync();
-        await _addInsRepository.LoadAsync();
-        await _orderRepository.LoadAsync();
+        await _usersWarehouse.LoadAsync();
+        await _membersWarehouse.LoadAsync();
+        await _coffeeWarehouse.LoadAsync();
+        await _addInsWarehouse.LoadAsync();
+        await _orderWarehouse.LoadAsync();
 
         try
         {

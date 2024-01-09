@@ -1,6 +1,6 @@
 ﻿namespace BisleriumCafe.Repositories;
 using BisleriumCafe.Model;
-internal interface IRepository<TSource> where TSource : IModel
+internal interface IWarehouse<TSource> where TSource : IModel
 {
     //
     // Summary:

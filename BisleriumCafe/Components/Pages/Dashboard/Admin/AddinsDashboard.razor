@@ -6,7 +6,7 @@
 @inject BisleriumCafe.Services.CoffeeService _coffeeService;
 @inject ISnackbar Snackbar;
 @inject IDialogService DialogService;
-@inject BisleriumCafe.Repositories.Repository<CoffeeAddIn> _addInRepository;
+@inject BisleriumCafe.Repositories.Warehouse<CoffeeAddIn> _addInWarehouse;
 
 <MudText Typo="Typo.h4" Color="Color.Dark">
     Addins for Coffee
@@ -90,7 +90,7 @@
     protected override async Task OnInitializedAsync()
     {
         await Task.Delay(0);
-        Elements = _addInRepository.GetAll();
+        Elements = _addInWarehouse.GetAll();
     }
 
     private bool FilterFunc1(CoffeeAddIn coffeeAddIn) => FilterFunc(coffeeAddIn, searchString1);

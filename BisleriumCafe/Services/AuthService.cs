@@ -2,11 +2,11 @@
 using BisleriumCafe.Model;
 using BisleriumCafe.Helpers;
 using BisleriumCafe.Enums;
-internal class AuthService(Repository<User> userRepository, Repository<Member> memberRepository, Repository<Order> orderRepository, SessionService sessionService)
+internal class AuthService(Warehouse<User> userWarehouse, Warehouse<Member> memberWarehouse, Warehouse<Order> orderWarehouse, SessionService sessionService)
 {
-    private readonly Repository<User> _userRepository = userRepository;
-    private readonly Repository<Member> _memberRepository = memberRepository;
-    private readonly Repository<Order> _orderRepository = orderRepository;
+    private readonly Warehouse<User> _userWarehouse = userWarehouse;
+    private readonly Warehouse<Member> _memberWarehouse = memberWarehouse;
+    private readonly Warehouse<Order> _orderWarehouse = orderWarehouse;
     private readonly SessionService _sessionService = sessionService;
 
     public User? CurrentUser { get; private set; }
@@ -17,7 +17,7 @@ internal class AuthService(Repository<User> userRepository, Repository<Member> m
 
     public async Task InitializeAdminOnFirstRun()
     {
-        if (_userRepository.GetAll().Count == 0 || _userRepository.GetAll().Where(user => user.Role == UserRole.Admin).Count() == 0)
+        if (_userWarehouse.GetAll().Count == 0 || _userWarehouse.GetAll().Where(user => user.Role == UserRole.Admin).Count() == 0)
         {
             User user = new()
             {
@@ -26,8 +26,8 @@ internal class AuthService(Repository<User> userRepository, Repository<Member> m
                 Role = UserRole.Admin,
                 PasswordHash = Hasher.HashSecret("admin"),
             };
-            _userRepository.Add(user);
-            await _userRepository.FlushAsync();
+            _userWarehouse.Add(user);
+            await _userWarehouse.FlushAsync();
         }
     }
     public async Task<TaskResponse> UpdateActiveMember(string userName)
@@ -39,7 +39,7 @@ internal class AuthService(Repository<User> userRepository, Repository<Member> m
             response.Message = "You are not authorized to do this.";
             return response;
         }
-        Member? member = _memberRepository.Get(x => x.UserName, userName);
+        Member? member = _memberWarehouse.Get(x => x.UserName, userName);
         if (member is null)
         {
             response.Message = "Member not found, Register first!";
@@ -64,7 +64,7 @@ internal class AuthService(Repository<User> userRepository, Repository<Member> m
     {
         TaskResponse response = new();
         response.IsSuccess = false;
-        if (_userRepository.HasUserName(username))
+        if (_userWarehouse.HasUserName(username))
         {
           response.Message = "Username already exists!";
             return response;
@@ -86,8 +86,8 @@ internal class AuthService(Repository<User> userRepository, Repository<Member> m
         {
             user.CreatedBy = CurrentUser.Id;
         }
-        _userRepository.Add(user);
-        await _userRepository.FlushAsync();
+        _userWarehouse.Add(user);
+        await _userWarehouse.FlushAsync();
 
 
         if(role == UserRole.Member)
@@ -99,8 +99,8 @@ internal class AuthService(Repository<User> userRepository, Repository<Member> m
                 FullName = fullname,
                 Role = role,
             };
-            _memberRepository.Add(member);
-            await _memberRepository.FlushAsync();
+            _memberWarehouse.Add(member);
+            await _memberWarehouse.FlushAsync();
         }   
         response.IsSuccess = true;
         response.Message = "User registered successfully!";
@@ -129,22 +129,22 @@ internal class AuthService(Repository<User> userRepository, Repository<Member> m
             return response;
         }
 
-        User? user = _userRepository.Get(x => x.Id, userId);
+        User? user = _userWarehouse.Get(x => x.Id, userId);
         if (user is null)
         {
             response.Message = "User not found!";
             return response;
         }
 
-        _userRepository.Remove(user);
-        await _userRepository.FlushAsync();
+        _userWarehouse.Remove(user);
+        await _userWarehouse.FlushAsync();
         if (user.Role == UserRole.Member)
         {
-            Member? member = _memberRepository.Get(x => x.Id, userId);
+            Member? member = _memberWarehouse.Get(x => x.Id, userId);
             if (member is not null)
             {
-                _memberRepository.Remove(member);
-                await _memberRepository.FlushAsync();
+                _memberWarehouse.Remove(member);
+                await _memberWarehouse.FlushAsync();
             }
         }
         response.IsSuccess = true;
@@ -161,7 +161,7 @@ internal class AuthService(Repository<User> userRepository, Repository<Member> m
             response.Message = "Already logged in!";
             return response;
         }
-        CurrentUser = _userRepository.Get(x => x.UserName, userName);
+        CurrentUser = _userWarehouse.Get(x => x.UserName, userName);
 
 
         if (CurrentUser is null)
@@ -222,7 +222,7 @@ internal class AuthService(Repository<User> userRepository, Repository<Member> m
             return;
         }
 
-        User? user = _userRepository.Get(x => x.Id, session.UserId);
+        User? user = _userWarehouse.Get(x => x.Id, session.UserId);
         
         if (user is null)
         {
@@ -231,7 +231,7 @@ internal class AuthService(Repository<User> userRepository, Repository<Member> m
 
         if (user.Role == UserRole.Member)
         {
-            Member? member = _memberRepository.Get(x => x.Id, user.Id);
+            Member? member = _memberWarehouse.Get(x => x.Id, user.Id);
             if(member is not null)
             {
                 member.IsRegularMember = IsRegularMember(member);
@@ -264,19 +264,19 @@ internal class AuthService(Repository<User> userRepository, Repository<Member> m
 
         }
 
-        if (_userRepository.HasUserName(userName) && CurrentUser.UserName != userName)
+        if (_userWarehouse.HasUserName(userName) && CurrentUser.UserName != userName)
         {
             response.Message = "Username already exists!";
             return response;
         }
         CurrentUser.FullName = fullName;
         CurrentUser.UserName = userName;
-        await _userRepository.FlushAsync();
+        await _userWarehouse.FlushAsync();
         if(CurrentUser.Role == UserRole.Member && CurrentMember is not null)
         {
             CurrentMember.FullName = fullName;
             CurrentMember.UserName = userName;
-            await _memberRepository.FlushAsync();
+            await _memberWarehouse.FlushAsync();
         }
         response.IsSuccess = true;
         response.Message = "Personal details updated successfully!";
@@ -299,7 +299,7 @@ internal class AuthService(Repository<User> userRepository, Repository<Member> m
             return response;
         }
 
-        User? user = _userRepository.Get(x => x.Id, userId);
+        User? user = _userWarehouse.Get(x => x.Id, userId);
         if (user is null)
         {
             response.Message = "User not found!";
@@ -317,8 +317,8 @@ internal class AuthService(Repository<User> userRepository, Repository<Member> m
         {
             user.PasswordHash = Hasher.HashSecret(passwordHash);
         }
-        _userRepository.Update(user);  
-        await _userRepository.FlushAsync();
+        _userWarehouse.Update(user);  
+        await _userWarehouse.FlushAsync();
         response.IsSuccess = true;
         response.Message = "User details updated successfully!";
         return response;
@@ -349,11 +349,11 @@ internal class AuthService(Repository<User> userRepository, Repository<Member> m
         response.Message = "Password changed successfully!";
 
         CurrentUser.PasswordHash = Hasher.HashSecret(newPassword);
-        await _userRepository.FlushAsync();
+        await _userWarehouse.FlushAsync();
         if(CurrentUser.Role == UserRole.Member && CurrentMember is not null)
         {
             CurrentMember.PasswordHash = Hasher.HashSecret(newPassword);
-            await _memberRepository.FlushAsync();
+            await _memberWarehouse.FlushAsync();
         }
         return response;
     }
@@ -373,7 +373,7 @@ internal class AuthService(Repository<User> userRepository, Repository<Member> m
     public bool IsRegularMember(Member member)
     {
         // Get all orders within the last 30 days for the given customer
-        var allOrdersDatePast30Days = _orderRepository.GetAll()
+        var allOrdersDatePast30Days = _orderWarehouse.GetAll()
             .Where(order => order.CustomerId == member.Id && order.OrderDate >= DateTime.UtcNow.AddDays(-30))
             .Select(order => order.OrderDate)
             .ToList();

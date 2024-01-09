@@ -1,9 +1,7 @@
-﻿using System.Text.Json;
-using BisleriumCafe.Enums;
-namespace BisleriumCafe.Model;
+﻿namespace BisleriumCafe.Model;
 
 
-public class User : IModel, ICloneable
+public class User : IModel
 {
     public Guid Id { get; set; } = Guid.NewGuid();
     public string UserName { get; set; }
@@ -22,24 +20,5 @@ public class User : IModel, ICloneable
         FullName = fullName;
         PasswordHash = passwordHash;
         Role = role;
-    }
-
-    public object Clone()
-    {
-        return new User
-        {
-            Id = Id,
-            UserName = UserName,
-            //Email = Email,
-            FullName = FullName,
-            PasswordHash = PasswordHash,
-            Role = Role,
-            CreatedAt = CreatedAt
-        };
-    }
-
-    public override string ToString()
-    {
-        return JsonSerializer.Serialize(this);
     }
 }

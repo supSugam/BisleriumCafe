@@ -6,7 +6,7 @@
 @inject BisleriumCafe.Services.CoffeeService _coffeeService;
 @inject ISnackbar Snackbar;
 @inject IDialogService DialogService;
-@inject BisleriumCafe.Repositories.Repository<CoffeeType> _coffeeRepository;
+@inject BisleriumCafe.Repositories.Warehouse<CoffeeType> _coffeeWarehouse;
 
 <MudText Typo="Typo.h4" Color="Color.Dark">
     Add a new coffee type
@@ -180,7 +180,7 @@
             protected override async Task OnInitializedAsync()
             {
             await Task.Delay(0);
-            Elements = _coffeeRepository.GetAll();
+            Elements = _coffeeWarehouse.GetAll();
             }
             private bool FilterFunc1(CoffeeType coffeeType) => FilterFunc(coffeeType, searchString1);
             private bool FilterFunc(CoffeeType coffeeType, string searchString)

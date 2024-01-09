@@ -1,7 +1,4 @@
-﻿using BisleriumCafe.Model;
-using BisleriumCafe.Providers;
-using BisleriumCafe.Enums;
-namespace BisleriumCafe.Helpers;
+﻿namespace BisleriumCafe.Helpers;
 
 internal static class Explorer
 {
@@ -16,11 +13,6 @@ internal static class Explorer
     public static string GetDocumentsDirectoryPath()
     {
         return Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-    }
-
-    public static string GetRepositoriesDirectoryPath()
-    {
-        return Path.Combine(GetDocumentsDirectoryPath(), "BisleriumCafeRepository");
     }
 
     public static FileProvider<TSource> GetFileProvider<TSource>(FileExtension extension) where TSource : IModel
@@ -70,8 +62,12 @@ internal static class Explorer
         return GetFilePath(GetDesktopDirectoryPath(), GetFile<TSource>(extension));
     }
 
+    public static string GetWarehouseDirectoryPath()
+    {
+        return Path.Combine(GetDocumentsDirectoryPath(), "BisleriumCafeWarehouse");
+    }
     public static string GetDefaultFilePath<TSource>(FileExtension extension)
     {
-        return GetFilePath(GetRepositoriesDirectoryPath(), GetFile<TSource>(extension));
+        return GetFilePath(GetWarehouseDirectoryPath(), GetFile<TSource>(extension));
     }
 }

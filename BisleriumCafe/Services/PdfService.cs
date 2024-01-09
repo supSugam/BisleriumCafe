@@ -11,7 +11,7 @@ namespace BisleriumCafe.Services
             try
             {
                 // Get the full file path for the PDF
-                string repoDirectory = Explorer.GetRepositoriesDirectoryPath();
+                string repoDirectory = Explorer.GetWarehouseDirectoryPath();
                 string salesReportsDirectory = Path.Combine(repoDirectory, "SalesReports");
 
                 // Check if the "SalesReports" directory exists, create it if not

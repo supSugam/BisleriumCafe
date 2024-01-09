@@ -4,8 +4,8 @@
 @using BisleriumCafe.Components.User;
 @using BisleriumCafe.Helpers;
 @inject ISnackbar Snackbar;
-@inject BisleriumCafe.Repositories.Repository<CoffeeType> _coffeeRepository;
-@inject BisleriumCafe.Repositories.Repository<CoffeeAddIn> _addinRepository;
+@inject BisleriumCafe.Repositories.Warehouse<CoffeeType> _coffeeWarehouse;
+@inject BisleriumCafe.Repositories.Warehouse<CoffeeAddIn> _addinWarehouse;
 @inject BisleriumCafe.Services.AuthService _authService;
 @inject BisleriumCafe.Services.OrderService _orderService;
 @inject IDialogService DialogService;
@@ -160,8 +160,8 @@ Quantity--;
 @code {
     protected override async Task OnInitializedAsync()
     {
-        _coffeeTypes = _coffeeRepository.GetAll();
-        _coffeeAddins = _addinRepository.GetAll();
+        _coffeeTypes = _coffeeWarehouse.GetAll();
+        _coffeeAddins = _addinWarehouse.GetAll();
     }
 
     private Member? ActiveMember =>_authService.CurrentMember;

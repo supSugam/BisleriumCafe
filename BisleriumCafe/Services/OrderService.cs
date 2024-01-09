@@ -1,14 +1,12 @@
 ﻿namespace BisleriumCafe.Services;
 using BisleriumCafe.Model;
 using BisleriumCafe.Helpers;
-internal class OrderService(Repository<Member> memberRepository, Repository<Order> orderRepository, AuthService _authService)
+internal class OrderService(Warehouse<Member> memberWarehouse, Warehouse<Order> orderWarehouse, AuthService _authService)
 {
-    private readonly Repository<Member> _memberRepository = memberRepository;
-    private readonly Repository<Order> _orderRepository = orderRepository;
+    private readonly Warehouse<Member> _memberWarehouse = memberWarehouse;
+    private readonly Warehouse<Order> _orderWarehouse = orderWarehouse;
     private readonly AuthService _authService = _authService;
     private Member? CurrentMember => _authService.CurrentMember;
-
-
     public async Task<TaskResponse> OrderACoffee(Order order)
     {
         TaskResponse response = new();
@@ -21,8 +19,8 @@ internal class OrderService(Repository<Member> memberRepository, Repository<Orde
         order.CustomerId = CurrentMember.Id;
         order.CustomerName = CurrentMember.FullName;
         order.CustomerUserName = CurrentMember.UserName;
-        _orderRepository.Add(order);
-        await _orderRepository.FlushAsync();
+        _orderWarehouse.Add(order);
+        await _orderWarehouse.FlushAsync();
         if(order.RedeemedFreeCoffeeCount > 0)
         {
             CurrentMember.FreeCoffeeCount -= order.RedeemedFreeCoffeeCount;
@@ -39,8 +37,8 @@ internal class OrderService(Repository<Member> memberRepository, Repository<Orde
         }
         CurrentMember.TotalOrders += 1;
 
-        bool UpdatedRepo = _memberRepository.Update(CurrentMember);
-        await _memberRepository.FlushAsync();
+        bool UpdatedRepo = _memberWarehouse.Update(CurrentMember);
+        await _memberWarehouse.FlushAsync();
         response.IsSuccess = UpdatedRepo;
         if(!UpdatedRepo)
         {
@@ -57,19 +55,19 @@ internal class OrderService(Repository<Member> memberRepository, Repository<Orde
     public IEnumerable<Order> GetAllMyOrders()
     {
         if(CurrentMember is null) return new List<Order>();
-        return _orderRepository.GetAll().Where(order => order.CustomerId == CurrentMember.Id);
+        return _orderWarehouse.GetAll().Where(order => order.CustomerId == CurrentMember.Id);
     }
     public IEnumerable<Order> GetAllOrders()
     {
-        return _orderRepository.GetAll();
+        return _orderWarehouse.GetAll();
     }
 
     public async Task<TaskResponse> UpdateOrderStatus(Order order, OrderStatus status) {
         TaskResponse response = new();
         response.IsSuccess = false;
         order.OrderStatus = status;
-        bool UpdatedRepo = _orderRepository.Update(order);
-        await _orderRepository.FlushAsync();
+        bool UpdatedRepo = _orderWarehouse.Update(order);
+        await _orderWarehouse.FlushAsync();
         response.IsSuccess = UpdatedRepo;
         if(UpdatedRepo)
         {
@@ -85,7 +83,7 @@ internal class OrderService(Repository<Member> memberRepository, Repository<Orde
 
     public IEnumerable<Order> GetOrdersWithInTimeRange(DateTime start, DateTime end)
     {
-        return _orderRepository.GetAll().Where(order => order.OrderDate >= start && order.OrderDate <= end);
+        return _orderWarehouse.GetAll().Where(order => order.OrderDate >= start && order.OrderDate <= end);
     }
 
     public IEnumerable<CoffeeType> GetTopCoffeeTypesWithInTimeRange(DateTime start, DateTime end,int LIMIT=5)

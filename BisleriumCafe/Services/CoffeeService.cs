@@ -2,12 +2,10 @@
 using BisleriumCafe.Model;
 using BisleriumCafe.Helpers;
 using BisleriumCafe.Enums;
-internal class CoffeeService(Repository<CoffeeType> coffeeRepository,Repository<CoffeeAddIn> addInRepository, Repository<User> userRepository, AuthService _authService)
+internal class CoffeeService(Warehouse<CoffeeType> coffeeWarehouse,Warehouse<CoffeeAddIn> addInWarehouse, Warehouse<User> userWarehouse, AuthService _authService)
 {
-    private readonly Repository<CoffeeType> _coffeeRepository = coffeeRepository;
-    private readonly Repository<CoffeeAddIn> _addInRepository = addInRepository;
-
-
+    private readonly Warehouse<CoffeeType> _coffeeWarehouse = coffeeWarehouse;
+    private readonly Warehouse<CoffeeAddIn> _addInWarehouse = addInWarehouse;
     public async Task<bool> StoreACoffeeType(CoffeeType coffeeType)
     {
         User? currentUser = _authService.CurrentUser;
@@ -16,14 +14,14 @@ internal class CoffeeService(Repository<CoffeeType> coffeeRepository,Repository<
             return false;
         }
 
-        if(_coffeeRepository.Contains(x => x.CoffeeName, coffeeType.CoffeeName))
+        if(_coffeeWarehouse.Contains(x => x.CoffeeName, coffeeType.CoffeeName))
         {
             return false;
         }
 
         coffeeType.CreatedBy = currentUser.Id;
-        _coffeeRepository.Add(coffeeType);
-        await _coffeeRepository.FlushAsync();
+        _coffeeWarehouse.Add(coffeeType);
+        await _coffeeWarehouse.FlushAsync();
         return true;
     }
 
@@ -33,7 +31,7 @@ internal class CoffeeService(Repository<CoffeeType> coffeeRepository,Repository<
         {
             return "-";
         }
-        User? user = userRepository.Get(user => user.Id, guid);
+        User? user = userWarehouse.Get(user => user.Id, guid);
         if (user is null)
         {
             return "-";
@@ -49,13 +47,13 @@ internal class CoffeeService(Repository<CoffeeType> coffeeRepository,Repository<
             return false;
         }
 
-        if(!_coffeeRepository.Contains(x => x.Id, coffeeType.Id))
+        if(!_coffeeWarehouse.Contains(x => x.Id, coffeeType.Id))
         {
             return false;
         }
 
-        _coffeeRepository.Update(coffeeType);
-        await _coffeeRepository.FlushAsync();
+        _coffeeWarehouse.Update(coffeeType);
+        await _coffeeWarehouse.FlushAsync();
         return true;
     }
 
@@ -67,13 +65,13 @@ internal class CoffeeService(Repository<CoffeeType> coffeeRepository,Repository<
             return false;
         }
 
-        if(!_coffeeRepository.Contains(x => x.Id, coffeeType.Id))
+        if(!_coffeeWarehouse.Contains(x => x.Id, coffeeType.Id))
         {
             return false;
         }
 
-        _coffeeRepository.Remove(coffeeType);
-        await _coffeeRepository.FlushAsync();
+        _coffeeWarehouse.Remove(coffeeType);
+        await _coffeeWarehouse.FlushAsync();
         return true;
     }
 
@@ -86,14 +84,14 @@ internal class CoffeeService(Repository<CoffeeType> coffeeRepository,Repository<
             return false;
         }
 
-        if(_addInRepository.Contains(x => x.AddInName, coffeeAddIn.AddInName))
+        if(_addInWarehouse.Contains(x => x.AddInName, coffeeAddIn.AddInName))
         {
             return false;
         }
 
         coffeeAddIn.CreatedBy = currentUser.Id;
-        _addInRepository.Add(coffeeAddIn);
-        await _addInRepository.FlushAsync();
+        _addInWarehouse.Add(coffeeAddIn);
+        await _addInWarehouse.FlushAsync();
         return true;
     }
 
@@ -105,13 +103,13 @@ internal class CoffeeService(Repository<CoffeeType> coffeeRepository,Repository<
             return false;
         }
 
-        if(!_addInRepository.Contains(x => x.Id, coffeeAddIn.Id))
+        if(!_addInWarehouse.Contains(x => x.Id, coffeeAddIn.Id))
         {
             return false;
         }
 
-        _addInRepository.Update(coffeeAddIn);
-        await _addInRepository.FlushAsync();
+        _addInWarehouse.Update(coffeeAddIn);
+        await _addInWarehouse.FlushAsync();
         return true;
     }
 
@@ -123,13 +121,13 @@ internal class CoffeeService(Repository<CoffeeType> coffeeRepository,Repository<
             return false;
         }
 
-        if(!_addInRepository.Contains(x => x.Id, coffeeAddIn.Id))
+        if(!_addInWarehouse.Contains(x => x.Id, coffeeAddIn.Id))
         {
             return false;
         }
 
-        _addInRepository.Remove(coffeeAddIn);
-        await _addInRepository.FlushAsync();
+        _addInWarehouse.Remove(coffeeAddIn);
+        await _addInWarehouse.FlushAsync();
         return true;
     }
 

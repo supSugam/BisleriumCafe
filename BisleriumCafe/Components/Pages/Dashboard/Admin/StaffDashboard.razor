@@ -8,7 +8,7 @@
 @inject IDialogService DialogService;
 @inject Microsoft.AspNetCore.Components.NavigationManager _navigationManager;
 @inject BisleriumCafe.Services.AuthService _authService;
-@inject BisleriumCafe.Repositories.Repository<User> _userRepository;
+@inject BisleriumCafe.Repositories.Warehouse<User> _userWarehouse;
 
 <MudText Typo="Typo.h4" Color="Color.Dark">
     Bislerium Cafe's Staffs
@@ -88,7 +88,7 @@
     protected override async Task OnInitializedAsync()
     {
         await Task.Delay(0);
-        Elements = _userRepository.GetAll().Where(user => user.Role == UserRole.Staff);
+        Elements = _userWarehouse.GetAll().Where(user => user.Role == UserRole.Staff);
     }
     private bool FilterFunc1(User user) => FilterFunc(user, searchString1);
     private bool FilterFunc(User user, string searchString)

@@ -2,13 +2,13 @@
 using BisleriumCafe.Model;
 using BisleriumCafe.Providers;
 
-internal abstract class RepositoryIO<TSource> where TSource : IModel
+internal abstract class WarehouseIO<TSource> where TSource : IModel
 {
     protected internal ICollection<TSource> _sourceData;
 
     private readonly FileProvider<TSource> _fileProvider;
 
-    internal RepositoryIO(FileProvider<TSource> fileProvider)
+    internal WarehouseIO(FileProvider<TSource> fileProvider)
     {
         _fileProvider = fileProvider;
     }

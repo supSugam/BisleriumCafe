@@ -2,9 +2,9 @@
 using BisleriumCafe.Model;
 using BisleriumCafe.Providers;
 
-internal class Repository<TSource> : RepositoryIO<TSource>, IRepository<TSource> where TSource : IModel
+internal class Warehouse<TSource> : WarehouseIO<TSource>, IWarehouse<TSource> where TSource : IModel
 {
-    public Repository(FileProvider<TSource> fileProvider) : base(fileProvider)
+    public Warehouse(FileProvider<TSource> fileProvider) : base(fileProvider)
     {
     }
 
