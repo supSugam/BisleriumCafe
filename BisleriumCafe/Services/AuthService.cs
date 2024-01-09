@@ -14,6 +14,22 @@ internal class AuthService(Repository<User> userRepository, Repository<Member> m
 
     // Member
 
+
+    public async Task InitializeAdminOnFirstRun()
+    {
+        if (_userRepository.GetAll().Count == 0 || _userRepository.GetAll().Where(user => user.Role == UserRole.Admin).Count() == 0)
+        {
+            User user = new()
+            {
+                UserName = "admin",
+                FullName = "Administrator",
+                Role = UserRole.Admin,
+                PasswordHash = Hasher.HashSecret("admin"),
+            };
+            _userRepository.Add(user);
+            await _userRepository.FlushAsync();
+        }
+    }
     public async Task<TaskResponse> UpdateActiveMember(string userName)
     {
         TaskResponse response = new();

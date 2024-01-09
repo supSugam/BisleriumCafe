@@ -2,10 +2,23 @@
 @using BisleriumCafe.Helpers
 @inject BisleriumCafe.Services.OrderService _orderService
 
-<div style="display:flex;flex-direction:column;gap:24px;">
+<div id="report-tables-wrapper" style="display:flex;flex-direction:column;gap:24px;">
+
+    @* Nice First Page *@
+
     @if (SelectedDate is not null)
     {
-        <h4 style="color:#66462F;font-weight:500;">
+        <section style="display:flex;width:100%;height:100%;justify-content:center;align-items:center;background-color:#F5EDDA">
+
+            <div style="display:flex; flex-direction:column;gap:12px">
+
+                        <h3 style="color:#66462F;font-weight:600;text-align:center">
+Bislerium Cafe
+                        </h3>
+
+
+
+        <h4 style="color:#66462F;font-weight:500;text-align:center">
             Report For
             @if (DatePeriod == DatePeriod.Daily)
             {
@@ -16,6 +29,10 @@
                 @SelectedDate.Value.ToString("MMMM, yyyy")
             }
         </h4>
+            </div>
+
+        </section>
+
     }
 @* Orders/Revenue *@
 <div style="display:flex;flex-direction:column;gap:12px;">
@@ -32,21 +49,24 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (Order orderData in OrderData)
+                @for (int i= 0;i<OrderData.Count;i++)
         {
             <tr style="background-color: #F5EDDA;">
-                        <td style="padding: 10px; border: 2px solid #66462F;">@OrdersIndex</td>
-                <td style="padding: 10px; border: 2px solid #66462F;">@Date.GetFormattedDate(orderData.OrderDate)</td>
-                <td style="padding: 10px; border: 2px solid #66462F;">@orderData.Quantity</td>
-                <td style="padding: 10px; border: 2px solid #66462F;">Rs. @orderData.Discount.ToFormattedDecimal()</td>
-                <td style="padding: 10px; border: 2px solid #66462F;">Rs. @orderData.ServiceCharge</td>
-                <td style="padding: 10px; border: 2px solid #66462F;">Rs. @orderData.Total.ToFormattedDecimal()</td>
-                <td style="padding: 10px; border: 2px solid #66462F;">Rs. @orderData.GrandTotal.ToFormattedDecimal()</td>
+                        <td style="padding: 10px; border: 2px solid #66462F;">@(i+1)</td>
+                <td style="padding: 10px; border: 2px solid #66462F;">@Date.GetFormattedDate(OrderData[i].OrderDate)</td>
+                <td style="padding: 10px; border: 2px solid #66462F;">@OrderData[i].Quantity</td>
+                <td style="padding: 10px; border: 2px solid #66462F;">Rs. @OrderData[i].Discount.ToFormattedDecimal()</td>
+                <td style="padding: 10px; border: 2px solid #66462F;">Rs. @OrderData[i].ServiceCharge</td>
+                <td style="padding: 10px; border: 2px solid #66462F;">Rs. @OrderData[i].Total.ToFormattedDecimal()</td>
+                <td style="padding: 10px; border: 2px solid #66462F;">Rs. @OrderData[i].GrandTotal.ToFormattedDecimal()</td>
             </tr>
-                    OrdersIndex++;
         }
     </tbody>
 </table>
+        <div style="display:flex;flex-direction:row;justify-content:flex-end;gap:16px;">
+            <h6 style="color:#66462F;font-weight:500;">Total Revenue:</h6>
+            <h5 style="color:#66462F;font-weight:600;">Rs. @TotalRevenue.ToFormattedDecimal()</h5>
+        </div>
 </div>
 
 @* Top 5 Coffee Types *@
@@ -65,14 +85,13 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (CoffeeType coffeeType in CoffeeTypesData)
+                @for (int i = 0; i < CoffeeTypesData.Count; i++)
                 {
                     <tr style="background-color: #F5EDDA;">
-<td style="padding: 10px; border: 2px solid #66462F;">@CoffeeTypesIndex</td>
-                        <td style="padding: 10px; border: 2px solid #66462F;">@coffeeType.CoffeeName</td>
-                        <td style="padding: 10px; border: 2px solid #66462F;">Rs. @coffeeType.CoffeePrice</td>
+<td style="padding: 10px; border: 2px solid #66462F;">@(i+1)</td>
+                        <td style="padding: 10px; border: 2px solid #66462F;">@CoffeeTypesData[i].CoffeeName</td>
+                        <td style="padding: 10px; border: 2px solid #66462F;">Rs. @CoffeeTypesData[i].CoffeePrice</td>
                     </tr>
-                    CoffeeTypesIndex++;
                 }
             </tbody>
         </table>
@@ -93,15 +112,17 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (CoffeeAddIn addIn in AddInsData)
-            {
-                <tr style="background-color: #F5EDDA;">
-<td style="padding: 10px; border: 2px solid #66462F;">@AddInsIndex+@addIn.Id</td>
-                    <td style="padding: 10px; border: 2px solid #66462F;">@addIn.AddInName</td>
-                    <td style="padding: 10px; border: 2px solid #66462F;">Rs. @addIn.AddInPrice</td>
-</tr>
-                AddInsIndex++;
-            }
+                @for (int i = 0; i < AddInsData.Count; i++)
+                {
+                    <tr style="background-color: #F5EDDA;">
+                        <td style="padding: 10px; border: 2px solid #66462F;">
+                            @(i+1)
+                        </td>
+                        <td style="padding: 10px; border: 2px solid #66462F;">@AddInsData[i].AddInName</td>
+                        <td style="padding: 10px; border: 2px solid #66462F;">Rs. @AddInsData[i].AddInPrice</td>
+                    </tr>
+                }
+
         </tbody>
     </table>
 
@@ -114,9 +135,6 @@
 
 @code {
 
-    int OrdersIndex = 1;
-    int CoffeeTypesIndex = 1;
-int AddInsIndex = 1;
 
     private string[] OrderHeadings = new string[] { "SN", "Order Date", "Quantity", "Discount", "SC", "Total", "Grand Total" };
 
@@ -126,7 +144,7 @@ int AddInsIndex = 1;
     private DateSpan DateSpan => DatePeriod == DatePeriod.Daily ? DateSpan.Day : DateSpan.Month;
 
     [Parameter]
-    public IEnumerable<Order> OrderData { get; set; }
+    public List<Order> OrderData { get; set; }
 
     [Parameter]
     public DateTime? SelectedDate { get; set; }
@@ -134,12 +152,14 @@ int AddInsIndex = 1;
 
     // Top 5 Coffee Types
     private string[] CoffeeTypeHeadings = new string[] { "SN", "Coffee Type", "Price" };
-    public IEnumerable<CoffeeType> CoffeeTypesData => SelectedDate is not null ? _orderService.GetTopCoffeeTypesWithInTimeRange(Date.GetStartOfDate(DateSpan, SelectedDate.Value), Date.GetEndOfDate(DateSpan, SelectedDate.Value)) : new List<CoffeeType>();
+    public List<CoffeeType> CoffeeTypesData => SelectedDate is not null ? _orderService.GetTopCoffeeTypesWithInTimeRange(Date.GetStartOfDate(DateSpan, SelectedDate.Value), Date.GetEndOfDate(DateSpan, SelectedDate.Value)).ToList() : new List<CoffeeType>();
 
 
     // Top 5 AddIns
 private string[] AddInHeadings = new string[] { "SN", "AddIn Name", "Price" };
-    public IEnumerable<CoffeeAddIn> AddInsData => SelectedDate is not null ? _orderService.GetTopCoffeeAddInsWithInTimeRange(Date.GetStartOfDate(DateSpan, SelectedDate.Value), Date.GetEndOfDate(DateSpan, SelectedDate.Value)) : new List<CoffeeAddIn>();
+    public List<CoffeeAddIn> AddInsData => SelectedDate is not null ? _orderService.GetTopCoffeeAddInsWithInTimeRange(Date.GetStartOfDate(DateSpan, SelectedDate.Value), Date.GetEndOfDate(DateSpan, SelectedDate.Value)).ToList() : new List<CoffeeAddIn>();
 
+
+    private decimal TotalRevenue => OrderData.Sum(o => o.GrandTotal);
 
 }

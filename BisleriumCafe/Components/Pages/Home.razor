@@ -1,14 +1,14 @@
 ﻿@page "/"
 
-<MudCarousel Class="mud-width-full" Style="height:360px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="true" AutoCycle="true" TData="object">
-    <MudCarouselItem Transition="transition" Color="@Color.Primary">
+<MudCarousel Class="mud-width-full" Style="min-height:384px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="true" AutoCycle="true" TData="object">
+    <MudCarouselItem Transition="transition">
         <div class="d-flex position-relative rounded overflow-hidden" style="height:100%">
             <MudImage Fluid="true" Class="mx-auto my-auto w-100 h-100 position-absolute" Alt="Coffee Carousel Image - Bislerium Cafe" Src="assets/images/carousel_img_1.jpg"
             Style="object-fit:cover !important;"
             />
         </div>
     </MudCarouselItem>
-    <MudCarouselItem Transition="transition" Color="@Color.Secondary">
+    <MudCarouselItem Transition="transition">
         <div class="d-flex position-relative rounded overflow-hidden" style="height:100%">
             <MudImage Fluid="true" Class="mx-auto my-auto w-100 h-100 position-absolute" Alt="Coffee Carousel Image - Bislerium Cafe" Src="assets/images/carousel_img_2.jpg"
             Style="object-fit:cover !important;"
@@ -24,6 +24,20 @@
     </MudCarouselItem>
 </MudCarousel>
 
+<div class="d-flex flex-column align-items-center justify-content-center text-center w-100">
+    <div class="mt-4 p-4">
+        <MudText Typo="Typo.h4" Color="Color.Dark" Class="fw-600 text-center mb-4 ls-tighter">Welcome to Bislerium Café</MudText>
+        <MudText Typo="Typo.h6" Color="Color.Dark" Class="text-center fw-500 mb-4 ls-tighter">Indulge in the rich flavors of our handcrafted coffees and delightful add-ins. Experience a world of taste with each sip.</MudText>
+        <MudButton
+Color="Color.Dark"
+            Variant="Variant.Filled"
+            Class="mb-4"
+            Link="order-now"
+            
+            >Start Taking Orders</MudButton>
+    </div>
+
+</div>
 
 @code {
     private Transition transition = Transition.Fade;

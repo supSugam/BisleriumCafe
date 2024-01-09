@@ -18,6 +18,11 @@ internal static class Explorer
         return Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
     }
 
+    public static string GetRepositoriesDirectoryPath()
+    {
+        return Path.Combine(GetDocumentsDirectoryPath(), "BisleriumCafeRepository");
+    }
+
     public static FileProvider<TSource> GetFileProvider<TSource>(FileExtension extension) where TSource : IModel
     {
         return extension switch
@@ -67,6 +72,6 @@ internal static class Explorer
 
     public static string GetDefaultFilePath<TSource>(FileExtension extension)
     {
-        return GetFilePath(GetDocumentsDirectoryPath(), GetFile<TSource>(extension));
+        return GetFilePath(GetRepositoriesDirectoryPath(), GetFile<TSource>(extension));
     }
 }

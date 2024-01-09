@@ -34,14 +34,30 @@
         async function GetHtmlContentOfAnElement(elementId) {
             let finalResult = "";
             var element = document.getElementById(elementId);
+
+            // Function to check if tables are present
+            function areTablesPresent() {
+                const wrapper = document.getElementById('report-tables-wrapper'); // Use document.getElementById here
+                return wrapper !== null && wrapper.getElementsByTagName('table') !== null && wrapper.getElementsByTagName('table').length > 0;
+            }
+
+            // Wait until tables are present
+            while (!areTablesPresent()) {
+                await new Promise(resolve => setTimeout(resolve, 100)); // Adjust delay as needed
+            }
+
+            // Tables are now present, get the HTML content
             var result = element.innerHTML;
             if (result) {
-finalResult = result;
+                finalResult = result;
             }
+
             return finalResult;
         }
-
     </script>
+
+
+
 </body>
 
 </html>

@@ -98,12 +98,9 @@
         {
             @if (AllOrdersOfSelectedMonths.Count() > 0)
             {
-                <MudText Typo="Typo.h5" Color="Color.Dark" Style="text-align:center">
-                    Report for @GetMultiSelectionText(SelectedMonths.ToList()) of @SelectedYear.Value.Year
-                </MudText>
                 @foreach (IEnumerable<Order> orders in AllOrdersOfSelectedMonths)
                 {
-                    <SalesReportTable DatePeriod="@_selectedDatePeriod" OrderData="@orders" SelectedDate="@SelectedYear" />
+                    <SalesReportTable DatePeriod="@_selectedDatePeriod" OrderData="@orders.ToList()" SelectedDate="@SelectedYear" />
                 }
             }
 
@@ -117,7 +114,7 @@
                     Report for @Date.GetFormattedDate(SelectedDay.Value)
                 </MudText>
 
-                    <SalesReportTable DatePeriod="@_selectedDatePeriod" OrderData="@OrdersOfSelectedDay" SelectedDate="@SelectedDay" />
+                    <SalesReportTable DatePeriod="@_selectedDatePeriod" OrderData="@OrdersOfSelectedDay.ToList()" SelectedDate="@SelectedDay" />
             }
         }
 
@@ -254,6 +251,7 @@ if(OrdersOfSelectedDay.Count() == 0)
                 return;
             }
         }
+        StateHasChanged();
         bool IsGenerated = await GeneratePdf();
         ShowProgress = false;
         StateHasChanged();

@@ -61,10 +61,6 @@
                 <MudNavLink Href="/" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Home" IconColor="Color.Dark" Class="d-flex align-items-center">
                     <MudText Typo="Typo.h6" Color="Color.Dark">Home</MudText>
                 </MudNavLink>
-                <MudNavLink Href="/explore" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Coffee" IconColor="Color.Dark" Class="d-flex align-items-center">
-                    <MudText Typo="Typo.h6" Color="Color.Dark">Explore</MudText>
-                </MudNavLink>
-
 
                 @if (_authService.CurrentUser is not null)
                 {
@@ -88,6 +84,7 @@
                             <MudNavLink Href="/dashboard/coffee">Coffees</MudNavLink>
                             <MudNavLink Href="/dashboard/addins">Add-Ins</MudNavLink>
                             <MudNavLink Href="/dashboard/staffs">Staffs</MudNavLink>
+                            <MudNavLink Href="/dashboard/overview">Overview</MudNavLink>
                         </MudNavGroup>
 
                     }
@@ -135,6 +132,7 @@
 
         try
         {
+            await _authService.InitializeAdminOnFirstRun();
             await _authService.CheckSession();
         }
         catch (Exception ex)

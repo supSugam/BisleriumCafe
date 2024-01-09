@@ -110,12 +110,13 @@ internal class OrderService(Repository<Member> memberRepository, Repository<Orde
     public IEnumerable<CoffeeAddIn> GetTopCoffeeAddInsWithInTimeRange(DateTime start, DateTime end, int LIMIT = 5)
     {
         IEnumerable<Order> allOrders = GetOrdersWithInTimeRange(start, end);
+
         var coffeeAddIns = allOrders
             .SelectMany(order => order.CoffeeAddIns)
-            .GroupBy(addIn => addIn)
+            .GroupBy(addIn => addIn.Id)  // Group by the unique Id property
             .Select(group => new
             {
-                CoffeeAddIn = group.Key,
+                CoffeeAddIn = group.First(),  // Use the first instance from the group
                 Count = group.Count()
             });
 
@@ -123,8 +124,10 @@ internal class OrderService(Repository<Member> memberRepository, Repository<Orde
             .OrderByDescending(coffeeAddIn => coffeeAddIn.Count)
             .Take(LIMIT)
             .Select(coffeeAddIn => coffeeAddIn.CoffeeAddIn);
+
         return topCoffeeAddIns;
     }
+
 
 
 }
