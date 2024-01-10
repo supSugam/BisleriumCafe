@@ -1,4 +1,5 @@
 ﻿@page "/"
+@inject BisleriumCafe.Services.AuthService _authService;
 
 <MudCarousel Class="mud-width-full" Style="min-height:384px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="true" AutoCycle="true" TData="object">
     <MudCarouselItem Transition="transition">
@@ -32,7 +33,7 @@
 Color="Color.Dark"
             Variant="Variant.Filled"
             Class="mb-4"
-            Link="order-now"
+            Link="@(_authService.CurrentUser is not null ? "order-now" : "login")"
             
             >Start Taking Orders</MudButton>
     </div>

@@ -88,9 +88,10 @@ internal class AuthService(Warehouse<User> userWarehouse, Warehouse<Member> memb
         }
         _userWarehouse.Add(user);
         await _userWarehouse.FlushAsync();
+        response.Message = "User registered successfully!";
 
 
-        if(role == UserRole.Member)
+        if (role == UserRole.Member)
         {
             Member member = new()
             {
@@ -99,11 +100,11 @@ internal class AuthService(Warehouse<User> userWarehouse, Warehouse<Member> memb
                 FullName = fullname,
                 Role = role,
             };
+            response.Message = "Member registered successfully!";
             _memberWarehouse.Add(member);
             await _memberWarehouse.FlushAsync();
         }   
         response.IsSuccess = true;
-        response.Message = "User registered successfully!";
         return response;
     }
 

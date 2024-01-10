@@ -12,22 +12,24 @@
 @inject NavigationManager _navigationManager;
 
 <div class="w-100 d-flex justify-content-between">
-    <div class="d-flex gap-2 flex-column">
         <MudText Typo="Typo.h6" Color="Color.Dark">
             Order Mode: <strong>
                 @(ActiveMember is null ? "For Normal" : "For Member")
             </strong>
         </MudText>
-        <MudButton StartIcon="@Icons.Material.Filled.Loyalty" Color="Color.Dark" Variant="Variant.Filled" Size="Size.Medium" OnClick="RegisterMemberPopup">
-            Register Member
-        </MudButton>
-    </div>
+
     @{
         string IconString = ActiveMember is null ? Icons.Material.Filled.InsertEmoticon : Icons.Material.Filled.RestartAlt;
         string ButtonText = ActiveMember is null ? "Switch to Member Mode" : "Switch to Customer Mode";
     }
+    <div class="d-flex gap-2 flex-column">
+
     <MudButton StartIcon="@IconString" Color="Color.Dark" Variant="Variant.Filled" Size="Size.Medium" OnClick="UpdateOrderMode">
         @ButtonText
+    </MudButton>
+    </div>
+    <MudButton StartIcon="@Icons.Material.Filled.Loyalty" Color="Color.Dark" Variant="Variant.Filled" Size="Size.Medium" OnClick="RegisterMemberPopup">
+        Register Member
     </MudButton>
 </div>
 
@@ -308,12 +310,7 @@ Quantity--;
 
     private async void OnOrderSubmit()
     {
-        if (_authService.CurrentMember is null)
-        {
-            // Normal Order
-            Snackbar.Add("Please login to place an order", Severity.Error);
-            return;
-        }
+
         if (SelectedCoffeeType == null)
         {
             Snackbar.Add("Please select a coffee type", Severity.Error);
@@ -328,15 +325,16 @@ Quantity--;
         order.Discount = Discount;
         order.ServiceCharge = ServiceCharge;
         order.GrandTotal = GrandTotal;
-        if(RedeemFreeCoffee)
-        {
-            order.RedeemedFreeCoffeeCount = RedeemedFreeCoffeeCount;
-        }
+
         if(ActiveMember is not null)
         {
-            order.CustomerId = _authService.CurrentMember.Id;
-            order.CustomerName = _authService.CurrentMember.FullName;
-            order.CustomerUserName = _authService.CurrentMember.UserName;
+            order.CustomerId = ActiveMember.Id;
+            order.CustomerName = ActiveMember.FullName;
+            order.CustomerUserName = ActiveMember.UserName;
+            if (RedeemFreeCoffee)
+            {
+                order.RedeemedFreeCoffeeCount = RedeemedFreeCoffeeCount;
+            }
         }
 
         var parameters = new DialogParameters<Dialog>();
@@ -354,9 +352,9 @@ Quantity--;
 
         if (!result.Canceled)
         {
-
-                TaskResponse response = await _orderService.OrderACoffee(order);
+            TaskResponse response = await _orderService.OrderACoffee(order, ActiveMember is not null);
                 Snackbar.Add(response.Message, response.IsSuccess ? Severity.Success : Severity.Error);
+            StateHasChanged();
         }
         
     }

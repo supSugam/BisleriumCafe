@@ -71,7 +71,7 @@
                         </MudNavLink>
                         <MudNavGroup Icon="@Icons.Material.Filled.Dashboard" Title="Dashboard" @bind-Expanded=IsDashboardMenuExpanded>
                             <MudNavLink Href="/dashboard/orders">Orders</MudNavLink>
-                            <MudNavLink Href="/dashboard/overview">Overview</MudNavLink>
+                            <MudNavLink Href="/dashboard/overview">Reports</MudNavLink>
                         </MudNavGroup>
 
                     }
@@ -84,13 +84,15 @@
                             <MudNavLink Href="/dashboard/coffee">Coffees</MudNavLink>
                             <MudNavLink Href="/dashboard/addins">Add-Ins</MudNavLink>
                             <MudNavLink Href="/dashboard/staffs">Staffs</MudNavLink>
-                            <MudNavLink Href="/dashboard/overview">Overview</MudNavLink>
+                            <MudNavLink Href="/dashboard/overview">Reports</MudNavLink>
                         </MudNavGroup>
 
                     }
                     @if (_authService.CurrentMember is not null)
                     {
-                        <MudMenuItem Link="my-orders">@_authService.CurrentMember.UserName's Orders</MudMenuItem>
+                        <MudNavLink Href="/my-orders" Icon="@Icons.Material.Filled.ShoppingBasket" IconColor="Color.Dark" Class="d-flex align-items-center">
+                            <MudText Typo="Typo.h6" Color="Color.Dark">@_authService.CurrentMember.UserName Orders</MudText>
+                        </MudNavLink>
                     }
 
                     <MudNavLink Href="/profile" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Person" IconColor="Color.Dark" Class="d-flex align-items-center">

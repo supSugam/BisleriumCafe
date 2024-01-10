@@ -7,46 +7,58 @@ internal class OrderService(Warehouse<Member> memberWarehouse, Warehouse<Order> 
     private readonly Warehouse<Order> _orderWarehouse = orderWarehouse;
     private readonly AuthService _authService = _authService;
     private Member? CurrentMember => _authService.CurrentMember;
-    public async Task<TaskResponse> OrderACoffee(Order order)
+    public async Task<TaskResponse> OrderACoffee(Order order,bool IsMemberOrder)
     {
         TaskResponse response = new();
         response.IsSuccess = false;
-        if(CurrentMember is null)
+        if(IsMemberOrder && CurrentMember is null)
         {
             response.Message = "You are not authorized to order a coffee";
             return response;
         }
-        order.CustomerId = CurrentMember.Id;
-        order.CustomerName = CurrentMember.FullName;
-        order.CustomerUserName = CurrentMember.UserName;
+
+        if (IsMemberOrder && CurrentMember is not null) {
+            order.CustomerId = CurrentMember.Id;
+            order.CustomerName = CurrentMember.FullName;
+            order.CustomerUserName = CurrentMember.UserName;
+        }
+
         _orderWarehouse.Add(order);
         await _orderWarehouse.FlushAsync();
-        if(order.RedeemedFreeCoffeeCount > 0)
+        if(IsMemberOrder && CurrentMember is not null)
         {
-            CurrentMember.FreeCoffeeCount -= order.RedeemedFreeCoffeeCount;
-            CurrentMember.FreeCoffeeProgress = 0;
+            if (order.RedeemedFreeCoffeeCount > 0)
+            {
+                CurrentMember.FreeCoffeeCount -= order.RedeemedFreeCoffeeCount;
+                CurrentMember.FreeCoffeeProgress = 0;
+            }
+            else
+            {
+                CurrentMember.FreeCoffeeProgress += 1;
+                if (CurrentMember.FreeCoffeeProgress == 10)
+                {
+                    CurrentMember.FreeCoffeeCount += 1;
+                    CurrentMember.FreeCoffeeProgress = 0;
+                }
+            }
+            CurrentMember.TotalOrders += 1;
+        bool UpdatedRepo = _memberWarehouse.Update(CurrentMember);
+            response.IsSuccess = UpdatedRepo;
+
         }
         else
         {
-            CurrentMember.FreeCoffeeProgress += 1;
-            if(CurrentMember.FreeCoffeeProgress == 10)
-            {
-                CurrentMember.FreeCoffeeCount += 1;
-                CurrentMember.FreeCoffeeProgress = 0;
-            }
+            response.IsSuccess = true;
         }
-        CurrentMember.TotalOrders += 1;
 
-        bool UpdatedRepo = _memberWarehouse.Update(CurrentMember);
+
         await _memberWarehouse.FlushAsync();
-        response.IsSuccess = UpdatedRepo;
-        if(!UpdatedRepo)
+        if(!response.IsSuccess)
         {
             response.Message = "Something went wrong while updating customer details";
         }
         else
         {
-
         response.Message = "Order placed successfully";
         }
         return response;
@@ -125,7 +137,5 @@ internal class OrderService(Warehouse<Member> memberWarehouse, Warehouse<Order> 
 
         return topCoffeeAddIns;
     }
-
-
 
 }

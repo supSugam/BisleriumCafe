@@ -1,7 +1,4 @@
-﻿using System.Text.Json;
-using BisleriumCafe.Model;
-using BisleriumCafe.Helpers;
-using BisleriumCafe.Enums;
+﻿using BisleriumCafe.Helpers;
 namespace BisleriumCafe.Services;
 
 internal class SessionService
@@ -13,7 +10,7 @@ internal class SessionService
         try
         {
             using FileStream stream = File.OpenRead(SessionPath);
-            return await JsonSerializer.DeserializeAsync<Session>(stream);
+            return await JsonSerializer.DeserializeAsync<Session>(stream) ?? null;
         }
         catch
         {
