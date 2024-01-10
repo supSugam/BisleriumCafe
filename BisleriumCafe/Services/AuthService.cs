@@ -45,7 +45,11 @@ internal class AuthService(Warehouse<User> userWarehouse, Warehouse<Member> memb
             response.Message = "Member not found, Register first!";
             return response;
         }
+        bool IsRegular = IsRegularMember(member);
+        member.IsRegularMember = IsRegular;
         CurrentMember = member;
+        _memberWarehouse.Update(member);
+        await _memberWarehouse.FlushAsync();
         response.IsSuccess = true;
         response.Message = $"Active member updated to {member.FullName}!";
         return response;
@@ -382,11 +386,9 @@ internal class AuthService(Warehouse<User> userWarehouse, Warehouse<Member> memb
         // Materialize the list of weekdays
         var weekdaysList = Date.GetWeekdaysList(DateTime.UtcNow, 30);
 
-        // HashSet for faster lookup
-        var orderDatesHashSet = new HashSet<DateTime>(allOrdersDatePast30Days);
 
         // Check if all weekdays have at least one order
-        return weekdaysList.All(date => orderDatesHashSet.Contains(date));
+        return weekdaysList.All(date => allOrdersDatePast30Days.Any(date1=>Date.AreSameDay(date,date1)));
     }
 
 }

@@ -88,12 +88,6 @@
                         </MudNavGroup>
 
                     }
-                    @if (_authService.CurrentMember is not null)
-                    {
-                        <MudNavLink Href="/my-orders" Icon="@Icons.Material.Filled.ShoppingBasket" IconColor="Color.Dark" Class="d-flex align-items-center">
-                            <MudText Typo="Typo.h6" Color="Color.Dark">@_authService.CurrentMember.UserName Orders</MudText>
-                        </MudNavLink>
-                    }
 
                     <MudNavLink Href="/profile" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Person" IconColor="Color.Dark" Class="d-flex align-items-center">
                         <MudText Typo="Typo.h6" Color="Color.Dark">Profile</MudText>
@@ -124,6 +118,8 @@
 @code {
     bool IsDrawerOpen = true;
     bool IsDashboardMenuExpanded = false;
+
+    private Member? _currentMember => _authService.CurrentMember;
 
     // Repositories
 
@@ -172,6 +168,7 @@
             try
             {
                 _authService.LogOut();
+                StateHasChanged();
                 Snackbar.Add("Logged out successfully", MudBlazor.Severity.Success);
                 _navigationManager.NavigateTo("/");
             }
