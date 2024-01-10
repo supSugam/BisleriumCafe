@@ -12,18 +12,23 @@
 @inject NavigationManager _navigationManager;
 
 <div class="w-100 d-flex justify-content-between">
+    <div class="d-flex gap-2 flex-column">
         <MudText Typo="Typo.h6" Color="Color.Dark">
             Order Mode: <strong>
                 @(ActiveMember is null ? "For Normal" : "For Member")
             </strong>
         </MudText>
-        @{
-            string IconString = ActiveMember is null ? Icons.Material.Filled.InsertEmoticon : Icons.Material.Filled.RestartAlt;
-            string ButtonText = ActiveMember is null ? "Switch to Member Mode" : "Switch to Customer Mode";
-        }
+        <MudButton StartIcon="@Icons.Material.Filled.Loyalty" Color="Color.Dark" Variant="Variant.Filled" Size="Size.Medium" OnClick="RegisterMemberPopup">
+            Register Member
+        </MudButton>
+    </div>
+    @{
+        string IconString = ActiveMember is null ? Icons.Material.Filled.InsertEmoticon : Icons.Material.Filled.RestartAlt;
+        string ButtonText = ActiveMember is null ? "Switch to Member Mode" : "Switch to Customer Mode";
+    }
     <MudButton StartIcon="@IconString" Color="Color.Dark" Variant="Variant.Filled" Size="Size.Medium" OnClick="UpdateOrderMode">
         @ButtonText
-</MudButton>
+    </MudButton>
 </div>
 
 @if (ActiveMember is not null)
@@ -202,7 +207,7 @@ Quantity--;
 
     // Register Member
 
-    private async void RegisterMember()
+    private async void RegisterMemberPopup()
     {
         RenderFragment fragment = builder =>
         {

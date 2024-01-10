@@ -381,7 +381,7 @@ internal class AuthService(Warehouse<User> userWarehouse, Warehouse<Member> memb
         // Materialize the list of weekdays
         var weekdaysList = Date.GetWeekdaysList(DateTime.UtcNow, 30);
 
-        // Use HashSet for faster lookup
+        // HashSet for faster lookup
         var orderDatesHashSet = new HashSet<DateTime>(allOrdersDatePast30Days);
 
         // Check if all weekdays have at least one order

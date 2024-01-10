@@ -55,7 +55,6 @@
 
     private async void OnValidSubmit(EditContext context)
     {
-        StateHasChanged();
         string username = model.Username;
         string password = model.Password;
         try
@@ -71,5 +70,7 @@ if (reponse.IsSuccess)
         {
             Snackbar.Add(ex.Message, MudBlazor.Severity.Error);
         }
+        StateHasChanged();
+
     }
 }

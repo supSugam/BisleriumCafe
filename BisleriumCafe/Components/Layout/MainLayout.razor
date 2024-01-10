@@ -73,13 +73,13 @@
                             <MudNavLink Href="/dashboard/orders">Orders</MudNavLink>
                             <MudNavLink Href="/dashboard/overview">Overview</MudNavLink>
                         </MudNavGroup>
-                        @if ( _authService.CurrentMember is not null)
-                        {
-                            <MudMenuItem Link="my-orders">@_authService.CurrentMember.UserName's Orders</MudMenuItem>
-                        }
+
                     }
                     @if (_authService.CurrentUser.Role == UserRole.Admin)
                     {
+                        <MudNavLink Href="/order-now" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ShoppingCart" IconColor="Color.Dark" Class="d-flex align-items-center">
+                            <MudText Typo="Typo.h6" Color="Color.Dark">Take Orders</MudText>
+                        </MudNavLink>
                         <MudNavGroup Icon="@Icons.Material.Filled.Dashboard" Title="Dashboard" @bind-Expanded=IsDashboardMenuExpanded>
                             <MudNavLink Href="/dashboard/coffee">Coffees</MudNavLink>
                             <MudNavLink Href="/dashboard/addins">Add-Ins</MudNavLink>
@@ -87,6 +87,10 @@
                             <MudNavLink Href="/dashboard/overview">Overview</MudNavLink>
                         </MudNavGroup>
 
+                    }
+                    @if (_authService.CurrentMember is not null)
+                    {
+                        <MudMenuItem Link="my-orders">@_authService.CurrentMember.UserName's Orders</MudMenuItem>
                     }
 
                     <MudNavLink Href="/profile" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Person" IconColor="Color.Dark" Class="d-flex align-items-center">
